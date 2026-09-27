@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1140 420" width="1140" height="420">
+  <title>A calm desk</title>
+  <g stroke="#1A2442" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="0" y="0" width="1140" height="420" rx="40" fill="#D5F3E6" stroke="none"/>
+    <rect x="0" y="352" width="1140" height="68" fill="#BDE9D5" stroke="none"/>
+
+    <!-- wall calendar -->
+    <rect x="116" y="76" width="150" height="160" rx="22" fill="#1A2442" stroke="none"/>
+    <rect x="110" y="70" width="150" height="160" rx="22" fill="#FFFFFF"/>
+    <path d="M110 110h150" /><path d="M112 108V92a20 20 0 0120-20h106a20 20 0 0120 20v16z" fill="#F2B233"/>
+    <path d="M150 60v22M220 60v22"/>
+    <g fill="#DCEBFF" stroke="none">
+      <rect x="132" y="126" width="24" height="20" rx="6"/><rect x="173" y="126" width="24" height="20" rx="6"/><rect x="214" y="126" width="24" height="20" rx="6"/>
+      <rect x="132" y="160" width="24" height="20" rx="6"/><rect x="214" y="160" width="24" height="20" rx="6"/>
+      <rect x="132" y="194" width="24" height="20" rx="6"/><rect x="173" y="194" width="24" height="20" rx="6"/>
+    </g>
+    <circle cx="185" cy="170" r="16" fill="#FFDCE5"/><path d="M178 170l5 5 9-10"/>
+
+    <!-- window with sun -->
+    <rect x="886" y="66" width="180" height="150" rx="26" fill="#1A2442" stroke="none"/>
+    <rect x="880" y="60" width="180" height="150" rx="26" fill="#DCEBFF"/>
+    <circle cx="1000" cy="118" r="30" fill="#F2B233"/>
+    <circle cx="990" cy="114" r="4" fill="#1A2442" stroke="none"/><circle cx="1010" cy="114" r="4" fill="#1A2442" stroke="none"/>
+    <path d="M992 126q8 7 16 0" fill="none"/>
+    <path d="M1000 74v-4M1044 118h4M1031 87l3-3M969 87l-3-3" stroke="#F2B233"/>
+    <path d="M910 180a16 16 0 0130-8 14 14 0 0126 10h-56z" fill="#FFFFFF"/>
+
+    <!-- plant -->
+    <path d="M320 212c-30-10-40-44-30-60 20 6 34 34 30 60z" fill="#4CC39A"/>
+    <path d="M324 212c10-30 40-40 56-32-4 22-30 36-56 32z" fill="#4CC39A"/>
+    <path d="M322 214c-4-30 6-58 18-66 10 16 4 48-18 66z" fill="#7DD6B4"/>
+    <path d="M296 226h54l-8 70h-38z" fill="#FF8FAB"/>
+    <path d="M292 218h62v14h-62z" fill="#FFDCE5"/>
+
+    <!-- desk -->
+    <rect x="236" y="306" width="672" height="22" rx="11" fill="#1A2442" stroke="none"/>
+    <rect x="230" y="296" width="680" height="24" rx="12" fill="#F2B233"/>
+    <path d="M280 320v52M860 320v52"/>
+
+    <!-- laptop -->
+    <rect x="452" y="160" width="240" height="140" rx="16" fill="#1A2442" stroke="none"/>
+    <rect x="446" y="154" width="240" height="140" rx="16" fill="#FFFFFF"/>
+    <rect x="466" y="174" width="200" height="100" rx="10" fill="#F4F6FC" stroke="none"/>
+    <rect x="478" y="186" width="80" height="18" rx="7" fill="#F2B233" stroke="none"/>
+    <rect x="478" y="212" width="120" height="18" rx="7" fill="#DCEBFF" stroke="none"/>
+    <rect x="478" y="238" width="60" height="18" rx="7" fill="#FFDCE5" stroke="none"/>
+    <circle cx="630" cy="222" r="22" fill="#D5F3E6" stroke="none"/>
+    <path d="M620 222l7 7 13-14" stroke="#4CC39A"/>
+    <path d="M416 294h300l-16 10H432z" fill="#DCEBFF"/>
+
+    <!-- mug with face -->
+    <path d="M790 250h0" />
+    <path d="M800 244c24 0 24 34 0 34" fill="none"/>
+    <rect x="740" y="236" width="64" height="62" rx="16" fill="#FFDCE5"/>
+    <circle cx="760" cy="262" r="4" fill="#1A2442" stroke="none"/><circle cx="784" cy="262" r="4" fill="#1A2442" stroke="none"/>
+    <path d="M764 276q8 7 16 0" fill="none"/>
+    <path d="M756 222c-8-10 8-16 0-26M776 222c-8-10 8-16 0-26M796 222c-8-10 8-16 0-26" fill="none" stroke="#FFFFFF"/>
+
+    <!-- notebook -->
+    <rect x="340" y="276" width="80" height="20" rx="6" fill="#E9E1FF"/>
+    <path d="M404 274l18-40 8 4-18 40z" fill="#F2B233"/>
+
+    <!-- doodles -->
+    <path d="M560 70l7 16 18 2-13 12 4 18-16-10-16 10 4-18-13-12 18-2z" fill="#FFFFFF"/>
+    <path d="M700 90v22M689 101h22" stroke="#9A7BF0"/>
+    <path d="M410 110v22M399 121h22" stroke="#F2B233"/>
+    <circle cx="80" cy="300" r="8" fill="#FF8FAB" stroke="none"/>
+    <path d="M960 290c10-10 20 10 30 0s20 10 30 0" fill="none" stroke="#5B9BF0"/>
+  </g>
+</svg>

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 652 440" width="652" height="440">
+  <title>A smiling coffee mug on a desk, next to a calendar with one day ticked off and a plant</title>
+  <rect width="652" height="440" fill="#D5F3E6"/>
+  <circle cx="560" cy="96" r="60" fill="#E6F8EF"/>
+  <rect y="372" width="652" height="68" fill="#BFEAD6"/>
+  <path d="M560 58V44M560 148V134M522 96H508M612 96H598M533 69L523 59M587 123L597 133M587 69L597 59M533 123L523 133" stroke="#F2B233" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="560" cy="96" r="26" fill="#F2B233" stroke="#1A2442" stroke-width="4"/>
+  <rect x="64" y="132" width="132" height="140" rx="18" fill="#FFFFFF" stroke="#1A2442" stroke-width="4"/>
+  <path d="M64 172V150Q64 132 82 132H178Q196 132 196 150V172Z" fill="#F2B233" stroke="#1A2442" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M98 120V144M162 120V144" stroke="#1A2442" stroke-width="5" stroke-linecap="round"/>
+  <rect x="84" y="188" width="22" height="22" rx="6" fill="#DCEBFF"/>
+  <rect x="120" y="188" width="22" height="22" rx="6" fill="#DCEBFF"/>
+  <rect x="156" y="188" width="22" height="22" rx="6" fill="#DCEBFF"/>
+  <rect x="84" y="224" width="22" height="22" rx="6" fill="#DCEBFF"/>
+  <rect x="156" y="224" width="22" height="22" rx="6" fill="#DCEBFF"/>
+  <circle cx="131" cy="235" r="15" fill="#4CC39A" stroke="#1A2442" stroke-width="3"/>
+  <path d="M124 235L129 240L138 230" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M104 350V400M548 350V400" stroke="#1A2442" stroke-width="5" stroke-linecap="round"/>
+  <rect x="52" y="332" width="548" height="22" rx="11" fill="#F2B233" stroke="#1A2442" stroke-width="4"/>
+  <path d="M500 262Q470 214 486 180Q512 214 500 262Z" fill="#4CC39A" stroke="#1A2442" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M500 262Q526 208 566 204Q552 248 500 262Z" fill="#4CC39A" stroke="#1A2442" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M500 262Q462 236 440 240Q458 270 500 262Z" fill="#4CC39A" stroke="#1A2442" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M466 260H536L526 332H476Z" fill="#FF8FAB" stroke="#1A2442" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M388 232C440 232 440 306 388 306" fill="none" stroke="#1A2442" stroke-width="18" stroke-linecap="round"/>
+  <path d="M388 232C440 232 440 306 388 306" fill="none" stroke="#FFDCE5" stroke-width="9" stroke-linecap="round"/>
+  <rect x="252" y="196" width="140" height="138" rx="28" fill="#FFDCE5" stroke="#1A2442" stroke-width="4"/>
+  <circle cx="307.0" cy="262" r="5.625" fill="#1A2442"/><circle cx="337.0" cy="262" r="5.625" fill="#1A2442"/><path d="M309.5 275.75Q322 288.25 334.5 275.75" fill="none" stroke="#1A2442" stroke-width="4" stroke-linecap="round"/><ellipse cx="292.0" cy="273.25" rx="8.75" ry="5.625" fill="#FF8FAB" opacity=".55"/><ellipse cx="352.0" cy="273.25" rx="8.75" ry="5.625" fill="#FF8FAB" opacity=".55"/>
+  <path d="M292 176Q280 160 292 146Q304 132 292 116M322 176Q310 160 322 146Q334 132 322 116M352 176Q340 160 352 146Q364 132 352 116" fill="none" stroke="#1A2442" stroke-width="4" stroke-linecap="round"/>
+  <path d="M226 96H246M236 86V106" stroke="#9A7BF0" stroke-width="4" stroke-linecap="round"/>
+  <path transform="translate(420 110) scale(1.3)" d="M0 -12L3.6 -3.6L12 0L3.6 3.6L0 12L-3.6 3.6L-12 0L-3.6 -3.6Z" fill="#FFFFFF"/>
+  <circle cx="46" cy="320" r="6" fill="#FF8FAB"/>
+  <path d="M610 300H630M620 290V310" stroke="#F2B233" stroke-width="4" stroke-linecap="round"/>
+</svg>

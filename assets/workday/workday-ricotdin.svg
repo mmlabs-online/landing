@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 652 440" width="652" height="440">
+  <title>Ricotdin – capture the meeting</title>
+  <g stroke="#1A2442" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="652" height="440" rx="52" fill="#FFDCE5" stroke="none"/>
+    <circle cx="120" cy="90" r="90" fill="#FFE9EF" stroke="none"/>
+
+    <!-- recorder card -->
+    <rect x="78" y="58" width="496" height="300" rx="30" fill="#1A2442" stroke="none"/>
+    <rect x="70" y="50" width="496" height="300" rx="30" fill="#FFFFFF"/>
+
+    <!-- REC pill -->
+    <rect x="96" y="74" width="92" height="32" rx="16" fill="#FFDCE5"/>
+    <circle cx="116" cy="90" r="7" fill="#FF8FAB" stroke="none"/>
+    <rect x="130" y="84" width="44" height="12" rx="6" fill="#1A2442" stroke="none"/>
+    <rect x="440" y="80" width="100" height="20" rx="10" fill="#F4F6FC" stroke="none"/>
+
+    <!-- mic button -->
+    <circle cx="150" cy="190" r="50" fill="#FF8FAB"/>
+    <rect x="137" y="160" width="26" height="42" rx="13" fill="#FFFFFF"/>
+    <path d="M124 190a26 26 0 0052 0M150 216v10" fill="none"/>
+
+    <!-- waveform -->
+    <g stroke="#1A2442" stroke-width="7">
+      <path d="M230 190v0M252 176v28M274 160v60M296 170v40M318 150v80M340 166v48M362 178v24M384 158v64M406 172v36M428 184v12M450 168v44M472 178v24M494 186v8M516 176v28M538 190v0"/>
+    </g>
+
+    <!-- transcript lines -->
+    <path d="M96 268h444" stroke="#E8EBF3" stroke-width="3"/>
+    <circle cx="112" cy="296" r="14" fill="#DCEBFF"/>
+    <rect x="138" y="288" width="220" height="16" rx="8" fill="#E8EBF3" stroke="none"/>
+    <rect x="366" y="288" width="90" height="16" rx="8" fill="#F2B233" stroke="none"/>
+    <circle cx="112" cy="330" r="14" fill="#D5F3E6"/>
+    <rect x="138" y="322" width="160" height="16" rx="8" fill="#E8EBF3" stroke="none"/>
+
+    <!-- speech bubbles with faces -->
+    <path d="M470 380h120a24 24 0 0024-24v-40a24 24 0 00-24-24H494a24 24 0 00-24 24v64z" fill="#1A2442" stroke="none" transform="translate(6,6)"/>
+    <path d="M470 380h120a24 24 0 0024-24v-40a24 24 0 00-24-24H494a24 24 0 00-24 24v64z" fill="#F2B233"/>
+    <path d="M496 320h80M496 344h52" stroke-width="5"/>
+
+    <!-- doodles -->
+    <path d="M600 90l6 14 16 2-12 10 4 16-14-9-14 9 4-16-12-10 16-2z" fill="#FFFFFF"/>
+    <path d="M40 400c10-10 20 10 30 0s20 10 30 0" fill="none" stroke="#9A7BF0"/>
+    <path d="M36 150v18M27 159h18" stroke="#F2B233"/>
+  </g>
+</svg>

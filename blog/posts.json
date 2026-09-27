@@ -1,0 +1,40 @@
+{
+  "posts": [
+    {
+      "slug": "why-small-apps",
+      "title": "Why we build small apps instead of one big one",
+      "tag": "Story",
+      "color": "#E9E1FF",
+      "dek": "One app, one job. Here is why we think that makes work a little lighter, and what it costs.",
+      "cover": "Cover illustration: a shelf of small, friendly tools",
+      "read": "2 min read",
+      "image": "assets/blog/blog-small-apps-cover.svg",
+      "thumb": "assets/blog/blog-small-apps-card.svg",
+      "alt": "Four smiling app tiles for a calendar, a microphone, a map pin and a medal sit on a shelf, next to an empty dashed slot for the next app"
+    },
+    {
+      "slug": "one-login-for-every-app",
+      "title": "Why we're building one login for every app",
+      "tag": "Behind the scenes",
+      "color": "#FFF1CF",
+      "dek": "Small apps only work if moving between them is easy. That starts with signing in once.",
+      "cover": "Cover illustration: one key, many doors",
+      "read": "2 min read",
+      "image": "assets/blog/blog-one-login-cover.svg",
+      "thumb": "assets/blog/blog-one-login-card.svg",
+      "alt": "A smiling golden key and a dotted path leading to an open door, beside three more doors for the other mmlabs apps"
+    },
+    {
+      "slug": "calmer-workday-habits",
+      "title": "Five small habits for a calmer workday",
+      "tag": "Tips",
+      "color": "#D5F3E6",
+      "dek": "No big system, no new routine to maintain. Just five small moves that take the edge off a busy day.",
+      "cover": "Cover illustration: a tidy desk, a coffee and a calendar",
+      "read": "2 min read",
+      "image": "assets/blog/blog-calmer-workday-cover.svg",
+      "thumb": "assets/blog/blog-calmer-workday-card.svg",
+      "alt": "A tidy desk with a laptop, a smiling coffee mug and a plant, a wall calendar with one day ticked off, and a sunny window"
+    }
+  ]
+}

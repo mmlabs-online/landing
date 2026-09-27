@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1140 420" width="1140" height="420">
+  <title>Small apps on a shelf</title>
+  <g stroke="#1A2442" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="0" y="0" width="1140" height="420" rx="40" fill="#E9E1FF" stroke="none"/>
+    <!-- background blobs -->
+    <circle cx="140" cy="110" r="70" fill="#F3EEFF" stroke="none"/>
+    <circle cx="1010" cy="300" r="90" fill="#F3EEFF" stroke="none"/>
+    <ellipse cx="570" cy="360" rx="420" ry="26" fill="#D9CCFB" stroke="none"/>
+
+    <!-- shelf -->
+    <rect x="200" y="300" width="740" height="22" rx="11" fill="#9A7BF0"/>
+    <path d="M280 322v24h24M860 322v24h-24" fill="none"/>
+
+    <!-- tile 1: calendar -->
+    <rect x="236" y="156" width="140" height="150" rx="34" fill="#1A2442" stroke="none"/>
+    <rect x="230" y="150" width="140" height="150" rx="34" fill="#F2B233"/>
+    <circle cx="282" cy="212" r="6" fill="#1A2442" stroke="none"/><circle cx="318" cy="212" r="6" fill="#1A2442" stroke="none"/>
+    <path d="M286 232q14 12 28 0" fill="none"/>
+    <ellipse cx="266" cy="232" rx="9" ry="5" fill="#FF8FAB" stroke="none"/><ellipse cx="334" cy="232" rx="9" ry="5" fill="#FF8FAB" stroke="none"/>
+    <circle cx="360" cy="160" r="30" fill="#FFFFFF"/>
+    <rect x="346" y="150" width="28" height="24" rx="6" fill="#FFF1CF"/><path d="M346 158h28M353 145v8M367 145v8"/>
+
+    <!-- tile 2: mic -->
+    <rect x="416" y="176" width="140" height="130" rx="34" fill="#1A2442" stroke="none"/>
+    <rect x="410" y="170" width="140" height="130" rx="34" fill="#FFDCE5"/>
+    <path d="M456 226q6-6 12 0M492 226q6-6 12 0" fill="none"/>
+    <path d="M466 246q14 12 28 0" fill="none"/>
+    <ellipse cx="446" cy="244" rx="9" ry="5" fill="#FF8FAB" stroke="none"/><ellipse cx="514" cy="244" rx="9" ry="5" fill="#FF8FAB" stroke="none"/>
+    <circle cx="540" cy="180" r="30" fill="#FFFFFF"/>
+    <rect x="533" y="164" width="14" height="22" rx="7" fill="#FF8FAB"/><path d="M526 180a14 14 0 0028 0M540 194v6" fill="none"/>
+
+    <!-- tile 3: pin -->
+    <rect x="596" y="146" width="140" height="160" rx="34" fill="#1A2442" stroke="none"/>
+    <rect x="590" y="140" width="140" height="160" rx="34" fill="#DCEBFF"/>
+    <circle cx="642" cy="208" r="6" fill="#1A2442" stroke="none"/><circle cx="678" cy="208" r="6" fill="#1A2442" stroke="none"/>
+    <ellipse cx="660" cy="232" rx="9" ry="7" fill="#1A2442" stroke="none"/>
+    <ellipse cx="626" cy="228" rx="9" ry="5" fill="#FF8FAB" stroke="none"/><ellipse cx="694" cy="228" rx="9" ry="5" fill="#FF8FAB" stroke="none"/>
+    <circle cx="720" cy="150" r="30" fill="#FFFFFF"/>
+    <path d="M720 170s-12-11-12-21a12 12 0 0124 0c0 10-12 21-12 21z" fill="#5B9BF0"/><circle cx="720" cy="149" r="4" fill="#FFFFFF"/>
+
+    <!-- tile 4: medal -->
+    <rect x="776" y="166" width="140" height="140" rx="34" fill="#1A2442" stroke="none"/>
+    <rect x="770" y="160" width="140" height="140" rx="34" fill="#D5F3E6"/>
+    <circle cx="822" cy="222" r="6" fill="#1A2442" stroke="none"/><path d="M852 222q6-6 12 0" fill="none"/>
+    <path d="M826 242q14 12 28 0" fill="none"/>
+    <ellipse cx="806" cy="240" rx="9" ry="5" fill="#FF8FAB" stroke="none"/><ellipse cx="874" cy="240" rx="9" ry="5" fill="#FF8FAB" stroke="none"/>
+    <circle cx="900" cy="170" r="30" fill="#FFFFFF"/>
+    <path d="M892 176l-5 16 13-6 13 6-5-16" fill="#FF8FAB"/><circle cx="900" cy="166" r="12" fill="#4CC39A"/>
+
+    <!-- one empty dashed slot: room for the next app -->
+    <rect x="960" y="210" width="90" height="90" rx="26" fill="none" stroke="#9A7BF0" stroke-dasharray="10 10"/>
+    <path d="M1005 240v30M990 255h30" stroke="#9A7BF0"/>
+
+    <!-- doodles -->
+    <path d="M150 90l8 18 20 2-15 13 5 20-18-11-18 11 5-20-15-13 20-2z" fill="#F2B233"/>
+    <path d="M470 70v26M457 83h26" stroke="#9A7BF0"/>
+    <path d="M1030 90v20M1020 100h20" stroke="#F2B233"/>
+    <circle cx="700" cy="70" r="8" fill="#FF8FAB" stroke="none"/>
+    <path d="M90 300c14-14 28 14 42 0s28 14 42 0" fill="none" stroke="#5B9BF0"/>
+  </g>
+</svg>

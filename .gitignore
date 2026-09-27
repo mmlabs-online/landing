@@ -1,0 +1,23 @@
+# Build output (python build.py regenerates it; the Docker image builds its own)
+dist/
+
+# Python
+__pycache__/
+*.pyc
+
+# Claude Code local files
+.claude/settings.local.json
+.claude/*.lock
+
+# Local secrets
+.env
+.env.*
+
+# Editor / OS files
+.vscode/
+.idea/
+*.swp
+*~
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1140 420" width="1140" height="420">
+  <title>One key, many doors</title>
+  <g stroke="#1A2442" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="0" y="0" width="1140" height="420" rx="40" fill="#FFF1CF" stroke="none"/>
+    <circle cx="250" cy="200" r="150" fill="#FFF8E4" stroke="none"/>
+    <rect x="0" y="340" width="1140" height="80" fill="#F9E3B0" stroke="none"/>
+    <path d="M40 340h1060"/>
+
+    <!-- key -->
+    <g transform="rotate(-14 260 210)">
+      <g fill="#1A2442" stroke="none" transform="translate(7,7)">
+        <circle cx="220" cy="210" r="74"/><rect x="286" y="197" width="190" height="28" rx="14"/>
+        <rect x="420" y="215" width="22" height="42" rx="6"/><rect x="452" y="215" width="22" height="30" rx="6"/>
+      </g>
+      <rect x="286" y="197" width="190" height="28" rx="14" fill="#F2B233"/>
+      <rect x="420" y="215" width="22" height="42" rx="6" fill="#F2B233"/>
+      <rect x="452" y="215" width="22" height="30" rx="6" fill="#F2B233"/>
+      <circle cx="220" cy="210" r="74" fill="#F2B233"/>
+      <circle cx="220" cy="210" r="50" fill="#FFF1CF"/>
+      <circle cx="202" cy="204" r="6" fill="#1A2442" stroke="none"/><circle cx="238" cy="204" r="6" fill="#1A2442" stroke="none"/>
+      <path d="M206 224q14 12 28 0" fill="none"/>
+      <ellipse cx="188" cy="222" rx="8" ry="5" fill="#FF8FAB" stroke="none"/><ellipse cx="252" cy="222" rx="8" ry="5" fill="#FF8FAB" stroke="none"/>
+    </g>
+
+    <!-- dotted path from key to doors -->
+    <path d="M500 150C540 70 600 80 612 150" fill="none" stroke-dasharray="4 14"/>
+    <path d="M598 140l14 12 10-16" fill="none"/>
+
+    <!-- door 1 (open) -->
+    <path d="M560 340V205a55 55 0 01110 0v135z" fill="#1A2442"/>
+    <path d="M572 340V210a43 43 0 0186 0v130z" fill="#F2B233" stroke="none"/>
+    <path d="M560 340V200l-34 16v140z" fill="#FFDCE5"/>
+    <circle cx="536" cy="286" r="5" fill="#1A2442" stroke="none"/>
+    <path d="M590 250l6-10M615 240v-12M640 250l-6-10" stroke="#FFF1CF"/>
+
+    <!-- door 2 -->
+    <path d="M700 340V205a55 55 0 01110 0v135z" fill="#DCEBFF"/>
+    <circle cx="790" cy="290" r="6" fill="#1A2442" stroke="none"/>
+    <circle cx="755" cy="215" r="26" fill="#FFFFFF"/>
+    <rect x="748" y="200" width="14" height="22" rx="7" fill="#FF8FAB"/><path d="M741 216a14 14 0 0028 0M755 230v4" fill="none"/>
+
+    <!-- door 3 -->
+    <path d="M840 340V205a55 55 0 01110 0v135z" fill="#D5F3E6"/>
+    <circle cx="930" cy="290" r="6" fill="#1A2442" stroke="none"/>
+    <circle cx="895" cy="215" r="26" fill="#FFFFFF"/>
+    <path d="M895 235s-12-11-12-21a12 12 0 0124 0c0 10-12 21-12 21z" fill="#5B9BF0"/><circle cx="895" cy="214" r="4" fill="#FFFFFF"/>
+
+    <!-- door 4 -->
+    <path d="M980 340V205a55 55 0 01110 0v135z" fill="#E9E1FF"/>
+    <circle cx="1070" cy="290" r="6" fill="#1A2442" stroke="none"/>
+    <circle cx="1035" cy="215" r="26" fill="#FFFFFF"/>
+    <path d="M1027 221l-5 16 13-6 13 6-5-16" fill="#FF8FAB"/><circle cx="1035" cy="211" r="12" fill="#4CC39A"/>
+
+    <!-- doormat under open door -->
+    <rect x="566" y="344" width="98" height="16" rx="8" fill="#FF8FAB"/>
+
+    <!-- doodles -->
+    <path d="M110 80l7 16 18 2-13 12 4 18-16-10-16 10 4-18-13-12 18-2z" fill="#FFFFFF"/>
+    <path d="M420 330v24M408 342h24" stroke="#F2B233"/>
+    <path d="M760 70v22M749 81h22" stroke="#5B9BF0"/>
+    <circle cx="960" cy="90" r="8" fill="#FF8FAB" stroke="none"/>
+    <path d="M1040 60c10-10 20 10 30 0s20 10 30 0" fill="none" stroke="#9A7BF0"/>
+  </g>
+</svg>

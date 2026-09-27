@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 652 440" width="652" height="440">
+  <title>A smiling golden key hopping toward an open, glowing door</title>
+  <rect width="652" height="440" fill="#FFF1CF"/>
+  <circle cx="170" cy="210" r="150" fill="#FFF8E3"/>
+  <rect y="360" width="652" height="80" fill="#FBE6B0"/><path d="M0 360H652" stroke="#1A2442" stroke-width="4"/>
+  <path d="M438 360V196A64 64 0 0 1 566 196V360Z" fill="#F2B233" stroke="#1A2442" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M502 214V240M470 230L482 250M534 230L522 250" stroke="#FFFFFF" stroke-width="5" stroke-linecap="round"/>
+  <path d="M438 358L402 376V200Q406 166 438 176Z" fill="#FFDCE5" stroke="#1A2442" stroke-width="4" stroke-linejoin="round"/>
+  <circle cx="414" cy="276" r="5" fill="#1A2442"/>
+  <rect x="450" y="362" width="104" height="14" rx="7" fill="#FF8FAB" stroke="#1A2442" stroke-width="4"/>
+  <path d="M372 168Q430 78 494 112" fill="none" stroke="#1A2442" stroke-width="4" stroke-linecap="round" stroke-dasharray="2 13"/>
+  <path d="M480 100L496 113L477 121" fill="none" stroke="#1A2442" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <g transform="rotate(-14 150 232)">
+  <rect x="196" y="214" width="180" height="34" rx="12" fill="#F2B233" stroke="#1A2442" stroke-width="4"/>
+  <rect x="326" y="236" width="24" height="38" rx="6" fill="#F2B233" stroke="#1A2442" stroke-width="4"/>
+  <rect x="292" y="236" width="20" height="28" rx="6" fill="#F2B233" stroke="#1A2442" stroke-width="4"/>
+  <rect x="194" y="216" width="36" height="30" fill="#F2B233"/>
+  <circle cx="150" cy="232" r="64" fill="#F2B233" stroke="#1A2442" stroke-width="4"/>
+  <circle cx="150" cy="232" r="45" fill="#FFF1CF" stroke="#1A2442" stroke-width="4"/>
+  <circle cx="138.6" cy="226" r="4.2749999999999995" fill="#1A2442"/><circle cx="161.4" cy="226" r="4.2749999999999995" fill="#1A2442"/><path d="M140.5 236.45Q150 245.95 159.5 236.45" fill="none" stroke="#1A2442" stroke-width="4" stroke-linecap="round"/><ellipse cx="127.2" cy="234.55" rx="6.6499999999999995" ry="4.2749999999999995" fill="#FF8FAB" opacity=".55"/><ellipse cx="172.8" cy="234.55" rx="6.6499999999999995" ry="4.2749999999999995" fill="#FF8FAB" opacity=".55"/>
+  </g>
+  <path transform="translate(80 90) scale(1.4)" d="M0 -12L3.6 -3.6L12 0L3.6 3.6L0 12L-3.6 3.6L-12 0L-3.6 -3.6Z" fill="#FFFFFF"/>
+  <path d="M330 320H350M340 310V330" stroke="#F2B233" stroke-width="4" stroke-linecap="round"/>
+  <path d="M590 70H610M600 60V80" stroke="#9A7BF0" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="290" cy="70" r="6" fill="#FF8FAB"/>
+</svg>

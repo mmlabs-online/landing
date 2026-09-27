@@ -1,0 +1,140 @@
+{
+  "site": {
+    "title": "mmlabs",
+    "domain": "mmlabs.online",
+    "social": {
+      "facebook": "https://www.facebook.com/ngocminh214/",
+      "email": "mmlabs.onl@gmail.com",
+      "linkedin": "https://www.linkedin.com/in/tran-thi-ngoc-minh-a52431220/"
+    },
+    "tagline": "Ming's lab for useful software.",
+    "intro": "mmlabs is where Ming designs, builds and runs his own web apps. Each one takes a real, everyday problem at work and solves it end to end, from product idea and architecture to a running service.",
+    "about": [
+      "mmlabs is the personal software lab of Ming, a solution architect and technical manager. It is a place to try ideas properly: write the brief, design the system, ship it, and keep the ones that earn their place.",
+      "The apps are independent web applications, each with its own codebase and data. They are being brought together under one shared sign-in, so a single account will work across all of them."
+    ]
+  },
+  "apps": [
+    {
+      "slug": "ricotdin",
+      "name": "Ricotdin",
+      "category": "Meeting intelligence",
+      "tagline": "One \u201cding,\u201d all recorded.",
+      "summary": "Records online meetings from the browser, with no bot in the call, then turns them into a transcript, summary, to-dos and a chat that answers with timestamps.",
+      "status": "live",
+      "statusNote": "MVP live",
+      "url": "https://ricotdin.mmlabs.online",
+      "page": "pages/ricotdin.html",
+      "problem": [
+        "Decisions happen in meetings, and the details leave with them. Taking notes means only half following the conversation.",
+        "Recording tools usually ask for something in return: a bot that joins the call and announces itself, a desktop app to install, or output that only works well in English."
+      ],
+      "steps": [
+        ["Record", "Capture the meeting tab and your microphone from the browser, mixed into one audio-only stream."],
+        ["Transcribe", "Get a speaker-labelled transcript with timestamps: who said what, and when."],
+        ["Understand", "A summary, structured notes, action items and calendar mentions are extracted automatically."],
+        ["Ask", "Chat across one meeting or all of them. Every answer points back to the moment it was said."]
+      ],
+      "features": [
+        ["No bot, no install", "Works in the browser alongside Google Meet, Microsoft Teams and Zoom. Nothing joins the call."],
+        ["Speaker-labelled transcript", "Clickable timestamps jump the audio player to the exact moment."],
+        ["Summary and notes", "A short summary plus structured notes on topics, decisions and next steps."],
+        ["To-dos and calendar", "Action items with owners and dates, exportable as .ics. Times are never made up."],
+        ["Grounded chat", "Answers only from what was said, cites the timestamp, and says \u201cnot found\u201d instead of guessing."],
+        ["Multilingual", "Transcript, notes and answers come back in the language of the meeting."]
+      ],
+      "audience": "Consultants, project leads, founders and client-facing teams who run back-to-back calls and need a reliable record afterwards, in their own language.",
+      "tech": ["Unified web app (UI and backend in one codebase)", "Relational database with vector search", "Private object storage with signed URLs", "Speech-to-text with speaker diarization", "Language model for summaries, extraction and Q&A"],
+      "privacy": "Audio is stored privately and reached only through short-lived signed URLs. The AI tier used does not train on user data, and each user can only see their own meetings.",
+      "roadmap": [
+        ["Now", "MVP", "Recording, processing pipeline, transcript, grounded chat, to-dos and calendar, meeting library, and role-based sign-in."],
+        ["Next", "Production", "A durable job queue, monitoring, security hardening and a clear data retention policy."],
+        ["Later", "Depth", "Real speaker names, library-wide search, summary emails, calendar sync and folders."]
+      ]
+    },
+    {
+      "slug": "seatmgt",
+      "name": "SeatMGT",
+      "category": "Seat and device tracking",
+      "tagline": "Every seat, every device, on one map.",
+      "summary": "Turns the who-sits-where spreadsheet into a living floor plan: seats mapped to network ports, devices tracked to owners, moves handled by request and approval.",
+      "status": "in-development",
+      "statusNote": "Phase 1 in progress",
+      "url": "https://seatmgt.mmlabs.online",
+      "page": "pages/seatmgt.html",
+      "problem": [
+        "Seats are wired to specific network ports, and devices change hands. People take a second desk, lend a monitor or move across the room, and the tracking sheet is out of date the moment they do.",
+        "The result is not knowing which port a machine is on, who owns what, or where free capacity actually is. Every reshuffle becomes a manual hunt."
+      ],
+      "steps": [
+        ["Request", "A user picks an open seat on the map and submits a request."],
+        ["Approve", "A manager approves it, or assigns someone directly."],
+        ["Place device", "The person's machine becomes the seat's primary device, tied to that seat's network port."],
+        ["Release", "When they leave, the seat opens and the device is released. No orphaned records."]
+      ],
+      "features": [
+        ["Visual layout designer", "Drag seats onto a grid that mirrors the real room. Each tile is a real seat record."],
+        ["Seats mapped to ports", "Every seat gets a code like C302-01 tied to its network port. Status comes from who is sitting there."],
+        ["Request and approve", "Users request, managers approve or assign, with a clear trail of who decided what."],
+        ["Device ownership", "One primary device per seat, owned by whoever sits there. Spare devices wait in inventory."],
+        ["Members and groups", "Each person's seats and devices in one view, with group and project labels for context."],
+        ["Access and audit", "Roles enforced on both the API and the interface, with an audit log of every move."]
+      ],
+      "audience": "Facilities and IT leads who own the floor, team managers who keep seating moving, and everyone who needs a desk and a working machine.",
+      "tech": ["Next.js (App Router)", "TypeScript", "Prisma", "PostgreSQL", "Better Auth with role-based access", "Tailwind CSS", "dnd-kit"],
+      "privacy": "",
+      "roadmap": [
+        ["Now", "Foundation", "Project setup with sign-in, layout designer, and seat and device management."],
+        ["Next", "Real data and rollout", "Containerised deployment, a real database behind the data layer, then feedback and iteration."]
+      ]
+    },
+    {
+      "slug": "calechip",
+      "name": "CaleChip",
+      "category": "Team leave and WFH planning",
+      "tagline": "See who's out before it's too late.",
+      "summary": "A shared calendar where everyone declares planned leave and work-from-home days early, with a warning when too much of the team is away on the same day.",
+      "status": "in-development",
+      "statusNote": "In development",
+      "url": "https://calechip.mmlabs.online",
+      "page": "pages/calechip.html",
+      "problem": [
+        "Leave plans live in chat threads and in people's heads. By the time a formal request reaches HR, it is too late for anyone to adjust.",
+        "Around public holidays everyone targets the same bridge days without knowing it, trips booked months ahead surface at the last minute, and a lead has no quick way to see how next month looks."
+      ],
+      "steps": [],
+      "features": [
+        ["Plan leave and WFH", "Full or half days, several days selected in one drag."],
+        ["Tentative plans", "Mark a plan as not final yet. It is still visible to the team and still counts."],
+        ["Overload warning", "A warning while you pick dates if more than half the team would be away. It warns, it never blocks."],
+        ["Approval with a gold star", "An admin approves entries, so everyone knows which plans are settled."],
+        ["Vietnamese holidays and bridge days", "Public holidays are built in, and the app flags bridge days and how many people have already taken them."],
+        ["Week, month and year views", "Week for coordinating work, month for everyday use, year for spotting overlaps far in advance."]
+      ],
+      "audience": "Teams that want to coordinate time off early, and leads who need the big picture at a glance.",
+      "scopeOut": ["Leave balances and quotas, which stay with HR", "The official leave request process, which it sits in front of", "Time tracking or attendance", "Blocking anyone from taking leave"],
+      "tech": [],
+      "privacy": "",
+      "roadmap": [
+        ["Phase 1", "Core", "Sign-in, teams, leave and WFH entries, month view, overload warning, Vietnamese holidays."],
+        ["Phase 2", "Complete", "Week and year views, approval flow, tentative tag, bridge-day detection."],
+        ["Phase 3", "Habit", "Reminders, a weekly digest to the team channel, export for HR, recurring entries."]
+      ]
+    },
+    {
+      "slug": "certmgt",
+      "name": "CertMGT",
+      "category": "Certificate and skill management",
+      "tagline": "",
+      "summary": "Keep track of certifications and skills across a team.",
+      "status": "",
+      "statusNote": "",
+      "url": "https://certmgt.mmlabs.online",
+      "detail": false
+    }
+  ],
+  "platform": {
+    "title": "One sign-in, coming soon",
+    "text": "Authen is the shared sign-in service for mmlabs. Once it is in place, you log in once and move between every app without signing in again. New apps plug into the same sign-in, so the lab can keep growing without new passwords."
+  }
+}

@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>mmlabs · Little apps that make work life lighter</title>
+<meta name="description" content="mmlabs builds friendly, focused tools for the everyday parts of work: your calendar, your meetings, your workspace and your skills. One account opens them all.">
+<link rel="icon" type="image/png" href="assets/logo-short.png">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/home.css">
+<script src="assets/home.js" defer></script>
+</head>
+
+<body>
+
+<!-- Top bar -->
+<div class="topbar" data-name="Top Bar">
+  <div class="container">
+    <div class="row"><span>★ One small things make work easier</span><a class="topbar-mail" href="mailto:{{email}}">✉ {{email}}</a></div>
+    <div class="social">{{social}}</div>
+  </div>
+</div>
+
+<!-- Header -->
+<header class="header" data-name="Header">
+  <div class="container">
+    <a class="logo-img" href="./"><img src="assets/logo-text.png" alt="mmlabs" width="190" height="101"></a>
+    <nav class="nav"><a class="on" href="./">Home</a><div class="dropdown"><a class="dd-toggle" href="#apps" aria-haspopup="true" aria-expanded="false" aria-controls="apps-menu">Apps<span class="caret" aria-hidden="true">▾</span></a>
+      <div class="menu" id="apps-menu">
+        <a class="menu-item" href="{{page:calechip}}"><span class="menu-dot" style="background:#FFF1CF"></span><span><b>CaleChip</b><small>Calendar management</small></span></a>
+        <a class="menu-item" href="{{page:ricotdin}}"><span class="menu-dot" style="background:#FFDCE5"></span><span><b>Ricotdin</b><small>Recording and transcription</small></span></a>
+        <a class="menu-item" href="{{page:seatmgt}}"><span class="menu-dot" style="background:#DCEBFF"></span><span><b>SeatMGT</b><small>Location and device management</small></span></a>
+        <a class="menu-item" href="{{page:certmgt}}"><span class="menu-dot" style="background:#D5F3E6"></span><span><b>CertMGT</b><small>Certificate and skill management</small></span></a>
+        <a class="menu-item menu-all" href="#apps">See all apps</a>
+      </div></div><a href="#how">How it works</a><a href="#pricing">Pricing</a><a href="#makers">Maker</a><a href="#news">News</a></nav>
+    <div class="header-actions">
+      <a class="btn btn-navy" href="#contact" style="height:48px">Contact us</a>
+      <a class="btn explore" href="#apps" style="height:48px">Explore apps</a>
+    </div>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero" data-name="Hero">
+  <svg class="doodle" style="left:90px;top:60px" width="40" height="40" viewBox="0 0 24 24" fill="#F2B233"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z"/></svg>
+  <svg class="doodle" style="left:640px;top:70px" width="34" height="34" viewBox="0 0 24 24" fill="#FF8FAB"><path d="M12 21s-8-5.3-8-11a4.5 4.5 0 018-2.8A4.5 4.5 0 0120 10c0 5.7-8 11-8 11z"/></svg>
+  <svg class="doodle" style="left:1270px;top:80px" width="120" height="60" viewBox="0 0 120 60" fill="#FFFFFF"><ellipse cx="40" cy="38" rx="30" ry="20"/><ellipse cx="70" cy="28" rx="32" ry="26"/><ellipse cx="92" cy="40" rx="24" ry="18"/></svg>
+  <svg class="doodle" style="left:560px;top:430px" width="90" height="30" viewBox="0 0 90 30" fill="none" stroke="#5B9BF0" stroke-width="4" stroke-linecap="round"><path d="M3 15c10-12 20 12 30 0s20 12 30 0 16-8 24 0"/></svg>
+  <div class="container">
+    <div class="hero-text">
+      <div class="pill">✨ Small apps for everyday work</div>
+      <h1>Little apps that make work life lighter</h1>
+      <p>mmlabs builds friendly, focused tools for the everyday parts of work: your calendar, your meetings, your workspace and your skills. One account opens them all.</p>
+      <div class="hero-actions"><a class="btn" href="#apps">Explore the apps</a><a class="btn btn-navy" href="#contact">Contact us</a></div>
+    </div>
+    <div class="hero-art-wrap">
+      <svg class="hero-art" viewBox="0 0 540 460" role="img" aria-labelledby="hero-art-title">
+        <title id="hero-art-title">The four mmlabs apps, CaleChip, Ricotdin, SeatMGT and CertMGT, linked to one mmlabs account on a laptop</title>
+        <g stroke="#1A2442" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+          <!-- background blob -->
+          <path d="M270 28c96-4 190 48 214 142 24 96-26 196-120 238-92 42-214 30-282-40C18 300 30 190 76 118 118 54 188 32 270 28z" fill="#FFF1CF" stroke="none"/>
+          <path d="M276 70c74 0 150 44 164 116 14 74-30 146-100 172-72 26-170 18-220-38-46-52-40-132-2-188 34-48 94-62 158-62z" fill="#FFDCE5" stroke="none" opacity=".55"/>
+          <!-- dashed links from apps to the account in the middle -->
+          <g fill="none" stroke-dasharray="3 12" stroke-width="4">
+            <path d="M140 150C170 170 190 185 205 195"/>
+            <path d="M400 142C370 165 350 180 335 195"/>
+            <path d="M130 330C160 310 185 300 205 292"/>
+            <path d="M410 332C380 312 355 300 335 292"/>
+          </g>
+          <!-- laptop -->
+          <rect x="173" y="160" width="200" height="136" rx="20" fill="#1A2442" stroke="none"/>
+          <rect x="166" y="153" width="200" height="136" rx="20" fill="#FFFFFF"/>
+          <rect x="182" y="169" width="168" height="104" rx="12" fill="#F4F6FC" stroke="none"/>
+          <path d="M136 289h260l-18 16H154z" fill="#DCEBFF"/>
+          <!-- mm account badge -->
+          <rect x="232" y="186" width="68" height="68" rx="20" fill="#F2B233"/>
+          <text x="266" y="229" text-anchor="middle" font-family="Fredoka, 'Arial Rounded MT Bold', Arial, sans-serif" font-weight="700" font-size="30" fill="#1A2442" stroke="none">mm</text>
+          <circle cx="300" cy="186" r="13" fill="#4CC39A"/><path d="M294 186l4 4 8-8" stroke="#FFFFFF" stroke-width="3.5" fill="none"/>
+          <g>
+            <rect x="64" y="76" width="88" height="88" rx="26" fill="#1A2442" stroke="none"/>
+            <rect x="58" y="70" width="88" height="88" rx="26" fill="#F2B233"/>
+            <circle cx="88.0" cy="110" r="4.5" fill="#1A2442" stroke="none"/><circle cx="116.0" cy="110" r="4.5" fill="#1A2442" stroke="none"/>
+            <path d="M92.0 124q10 9 20 0" fill="none"/>
+            <ellipse cx="76.0" cy="124" rx="7" ry="4" fill="#FF8FAB" stroke="none"/><ellipse cx="128.0" cy="124" rx="7" ry="4" fill="#FF8FAB" stroke="none"/>
+            <g transform="translate(136,78)"><circle r="21" fill="#FFFFFF"/><rect x="-10" y="-8" width="20" height="18" rx="5" fill="#FFF1CF"/><path d="M-10 -2h20M-5 -12v5M5 -12v5" fill="none"/></g>
+          </g>
+          <g>
+            <rect x="400" y="64" width="88" height="88" rx="26" fill="#1A2442" stroke="none"/>
+            <rect x="394" y="58" width="88" height="88" rx="26" fill="#FFDCE5"/>
+            <path d="M419.0 99q5-6 10 0M447.0 99q5-6 10 0" fill="none"/>
+            <path d="M428.0 112q10 9 20 0" fill="none"/>
+            <ellipse cx="412.0" cy="112" rx="7" ry="4" fill="#FF8FAB" stroke="none"/><ellipse cx="464.0" cy="112" rx="7" ry="4" fill="#FF8FAB" stroke="none"/>
+            <g transform="translate(472,66)"><circle r="21" fill="#FFFFFF"/><rect x="-5" y="-12" width="10" height="16" rx="5" fill="#FF8FAB"/><path d="M-10 -1a10 10 0 0020 0M0 9v3" fill="none"/></g>
+          </g>
+          <g>
+            <rect x="48" y="306" width="88" height="88" rx="26" fill="#1A2442" stroke="none"/>
+            <rect x="42" y="300" width="88" height="88" rx="26" fill="#DCEBFF"/>
+            <circle cx="72.0" cy="340" r="4.5" fill="#1A2442" stroke="none"/><circle cx="100.0" cy="340" r="4.5" fill="#1A2442" stroke="none"/>
+            <path d="M76.0 354q10 9 20 0" fill="none"/>
+            <ellipse cx="60.0" cy="354" rx="7" ry="4" fill="#FF8FAB" stroke="none"/><ellipse cx="112.0" cy="354" rx="7" ry="4" fill="#FF8FAB" stroke="none"/>
+            <g transform="translate(120,308)"><circle r="21" fill="#FFFFFF"/><path d="M0 13s-9-8-9-15a9 9 0 0118 0c0 7-9 15-9 15z" fill="#5B9BF0"/><circle cx="0" cy="-2" r="3" fill="#FFFFFF" stroke="none"/></g>
+          </g>
+          <g>
+            <rect x="418" y="318" width="88" height="88" rx="26" fill="#1A2442" stroke="none"/>
+            <rect x="412" y="312" width="88" height="88" rx="26" fill="#D5F3E6"/>
+            <circle cx="442.0" cy="352" r="4.5" fill="#1A2442" stroke="none"/><path d="M465.0 353q5-6 10 0" fill="none"/>
+            <path d="M446.0 366q10 9 20 0" fill="none"/>
+            <ellipse cx="430.0" cy="366" rx="7" ry="4" fill="#FF8FAB" stroke="none"/><ellipse cx="482.0" cy="366" rx="7" ry="4" fill="#FF8FAB" stroke="none"/>
+            <g transform="translate(490,320)"><circle r="21" fill="#FFFFFF"/><path d="M-6 3l-4 11 10-4 10 4-4-11" fill="#FF8FAB"/><circle cx="0" cy="-3" r="9" fill="#4CC39A"/></g>
+          </g>
+          <!-- doodles -->
+          <path d="M258 60l7 15 17 2-13 11 4 17-15-9-15 9 4-17-13-11 17-2z" fill="#F2B233"/>
+          <path d="M276 400c-12-8-20-16-20-25a10 10 0 0120-4 10 10 0 0120 4c0 9-8 17-20 25z" fill="#FF8FAB"/>
+          <path d="M500 220v22M489 231h22" stroke="#9A7BF0"/>
+          <path d="M26 200v20M16 210h20" stroke="#5B9BF0"/>
+          <path d="M170 400c10-10 20 10 30 0s20 10 30 0" fill="none" stroke="#5B9BF0"/>
+          <path d="M340 408a14 14 0 0126-7 12 12 0 0122 9h-48z" fill="#FFFFFF"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+</section>
+<svg class="wave" viewBox="0 0 1440 70" preserveAspectRatio="none"><path d="M0 0H1440V20C1320 70 1200 70 1080 35C960 0 840 0 720 35C600 70 480 70 360 35C240 0 120 0 0 35Z" fill="#F4F6FC"/></svg>
+
+<!-- Apps -->
+<section class="services" id="apps" data-name="Apps">
+  <div class="container">
+    <h2 class="section-title">Meet the app family</h2>
+    <p class="section-sub">Each app does one job well. Pick the one you need today.</p>
+    <div class="row">
+      <div class="service" data-href="{{page:calechip}}" style="background:#FFF1CF"><div class="service-icon"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#1A2442" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="4" fill="#FFFFFF"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="12" cy="15" r="2.2" fill="#F2B233"/></svg></div><h3><a href="{{page:calechip}}">CaleChip</a></h3><p>Calendar management for planning your days and weeks.</p><a class="service-link" href="{{page:calechip}}">Explore CaleChip ›</a></div>
+      <div class="service" data-href="{{page:ricotdin}}" style="background:#FFDCE5"><div class="service-icon"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#1A2442" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3" fill="#FF8FAB"/><path d="M5 11a7 7 0 0014 0M12 18v3M9 21h6"/></svg></div><h3><a href="{{page:ricotdin}}">Ricotdin</a></h3><p>Recording and transcription, so what was said is easy to find later.</p><a class="service-link" href="{{page:ricotdin}}">Explore Ricotdin ›</a></div>
+      <div class="service" data-href="{{page:seatmgt}}" style="background:#DCEBFF"><div class="service-icon"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#1A2442" stroke-width="2" stroke-linecap="round"><path d="M12 21s-6-5.5-6-10.5a6 6 0 0112 0C18 15.5 12 21 12 21z" fill="#5B9BF0"/><circle cx="12" cy="10.5" r="2.2" fill="#FFFFFF"/></svg></div><h3><a href="{{page:seatmgt}}">SeatMGT</a></h3><p>Location and device management for your workspace.</p><a class="service-link" href="{{page:seatmgt}}">Explore SeatMGT ›</a></div>
+      <div class="service" data-href="{{page:certmgt}}" style="background:#D5F3E6"><div class="service-icon"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#1A2442" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="9" r="6" fill="#4CC39A"/><path d="M8 14l-2 7 6-3 6 3-2-7"/><path d="M9.5 9l1.8 1.8L14.5 7.5" stroke="#FFFFFF"/></svg></div><h3><a href="{{page:certmgt}}">CertMGT</a></h3><p>Certificate and skill management, keeping growth in one place.</p><a class="service-link" href="{{page:certmgt}}">Explore CertMGT ›</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- One account -->
+<section class="about" id="account" data-name="One Account">
+  <div class="about-card">
+    <svg class="doodle" style="left:70px;top:40px" width="46" height="46" viewBox="0 0 24 24" fill="#9A7BF0"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z"/></svg>
+    <div class="about-text">
+      <h2>One account, every app</h2>
+      <p>Authen is the mmlabs sign-in. Log in once and move between apps without typing your password again.</p>
+      <div class="checks">
+        <div class="check"><span class="tick"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"><path d="M5 12l5 5 9-10"/></svg></span>Sign in once, use every app</div>
+        <div class="check"><span class="tick"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"><path d="M5 12l5 5 9-10"/></svg></span>Each app stays small and focused</div>
+        <div class="check"><span class="tick"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"><path d="M5 12l5 5 9-10"/></svg></span>New apps join the same account</div>
+      </div>
+      <div><a class="btn" href="#how">How sign-in works</a></div>
+    </div>
+    <div class="about-art" role="img" aria-label="A golden key with dotted paths leading to four open doors, one for each mmlabs app">
+      <svg viewBox="0 0 460 380" aria-hidden="true">
+        <ellipse cx="250" cy="336" rx="96" ry="11" fill="#E8EBF3"/>
+        <path d="M222 262Q140 250 72 216" fill="none" stroke="#9A7BF0" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 9"/><path d="M236 252Q200 214 167 176" fill="none" stroke="#9A7BF0" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 9"/><path d="M262 252Q280 214 293 176" fill="none" stroke="#9A7BF0" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 9"/><path d="M280 262Q340 252 388 216" fill="none" stroke="#9A7BF0" stroke-width="3" stroke-linecap="round" stroke-dasharray="1 9"/>
+        <g class="door">
+        <path d="M40 210V142A32 32 0 0 1 104 142V210Z" fill="#FFFBEF" stroke="#1A2442" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M40 210V142Q54 114 80 122V220Z" fill="#F2B233" stroke="#1A2442" stroke-width="3" stroke-linejoin="round"/>
+        <circle cx="72" cy="174" r="3.5" fill="#1A2442"/>
+        <g transform="translate(72 92)"><circle r="15" fill="#FFF1CF" stroke="#1A2442" stroke-width="2.5"/><g fill="none" stroke="#1A2442" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="-6" y="-5" width="12" height="11" rx="2"/><path d="M-6 -1H6M-3 -7V-4M3 -7V-4"/></g></g>
+      </g>
+        <g class="door">
+        <path d="M135 170V102A32 32 0 0 1 199 102V170Z" fill="#FFFBEF" stroke="#1A2442" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M135 170V102Q149 74 175 82V180Z" fill="#FF8FAB" stroke="#1A2442" stroke-width="3" stroke-linejoin="round"/>
+        <circle cx="167" cy="134" r="3.5" fill="#1A2442"/>
+        <g transform="translate(167 52)"><circle r="15" fill="#FFDCE5" stroke="#1A2442" stroke-width="2.5"/><g fill="none" stroke="#1A2442" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="-3" y="-8" width="6" height="10" rx="3"/><path d="M-6 0A6 6 0 0 0 6 0M0 6V9"/></g></g>
+      </g>
+        <g class="door">
+        <path d="M261 170V102A32 32 0 0 1 325 102V170Z" fill="#FFFBEF" stroke="#1A2442" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M261 170V102Q275 74 301 82V180Z" fill="#5B9BF0" stroke="#1A2442" stroke-width="3" stroke-linejoin="round"/>
+        <circle cx="293" cy="134" r="3.5" fill="#1A2442"/>
+        <g transform="translate(293 52)"><circle r="15" fill="#DCEBFF" stroke="#1A2442" stroke-width="2.5"/><g fill="none" stroke="#1A2442" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M0 8C-7 1 -6 -7 0 -7C6 -7 7 1 0 8Z"/><circle cy="-1.5" r="2"/></g></g>
+      </g>
+        <g class="door">
+        <path d="M356 210V142A32 32 0 0 1 420 142V210Z" fill="#FFFBEF" stroke="#1A2442" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M356 210V142Q370 114 396 122V220Z" fill="#4CC39A" stroke="#1A2442" stroke-width="3" stroke-linejoin="round"/>
+        <circle cx="388" cy="174" r="3.5" fill="#1A2442"/>
+        <g transform="translate(388 92)"><circle r="15" fill="#D5F3E6" stroke="#1A2442" stroke-width="2.5"/><g fill="none" stroke="#1A2442" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M-6 0L-2 4L6 -4"/></g></g>
+      </g>
+        <g class="key">
+          <path d="M200 280H320Q330 280 330 290Q330 300 320 300H316V314H304V300H296V320H282V300H200Z" fill="#F2B233" stroke="#1A2442" stroke-width="3" stroke-linejoin="round"/>
+          <circle cx="170" cy="290" r="34" fill="#F2B233" stroke="#1A2442" stroke-width="3"/>
+          <circle cx="170" cy="290" r="11" fill="#FFFFFF" stroke="#1A2442" stroke-width="3"/>
+          <path d="M150 272Q156 264 166 262" fill="none" stroke="#FFF1CF" stroke-width="4" stroke-linecap="round"/>
+        </g>
+        <path transform="translate(352 250) scale(1.2)" d="M0 -10L3 -3L10 0L3 3L0 10L-3 3L-10 0L-3 -3Z" fill="#F2B233"/><path transform="translate(112 280) scale(0.9)" d="M0 -10L3 -3L10 0L3 3L0 10L-3 3L-10 0L-3 -3Z" fill="#FF8FAB"/><path transform="translate(230 40) scale(1)" d="M0 -10L3 -3L10 0L3 3L0 10L-3 3L-10 0L-3 -3Z" fill="#9A7BF0"/>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- Facts -->
+<svg class="wave" viewBox="0 0 1440 70" preserveAspectRatio="none"><path d="M0 70V35C120 0 240 0 360 35C480 70 600 70 720 35C840 0 960 0 1080 35C1200 70 1320 70 1440 35V70Z" fill="#243259"/></svg>
+<section class="stats" data-name="Facts">
+  <div class="container">
+    <div class="stat"><div class="stat-icon" style="background:#FFF1CF"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1A2442" stroke-width="2.4"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg></div><div class="stat-num">4</div><span>Work apps</span></div>
+    <div class="stat"><div class="stat-icon" style="background:#FFDCE5"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1A2442" stroke-width="2.4"><circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v3M21 12v2"/></svg></div><div class="stat-num">1</div><span>Account for all of them</span></div>
+    <div class="stat"><div class="stat-icon" style="background:#DCEBFF"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1A2442" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><div class="stat-num">4</div><span>Parts of your workday covered</span></div>
+    <div class="stat"><div class="stat-icon" style="background:#D5F3E6"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#1A2442" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div><div class="stat-num">+</div><span>More apps on the way</span></div>
+  </div>
+</section>
+<svg class="wave" viewBox="0 0 1440 70" preserveAspectRatio="none"><path d="M0 0H1440V35C1320 70 1200 70 1080 35C960 0 840 0 720 35C600 70 480 70 360 35C240 0 120 0 0 35Z" fill="#243259"/></svg>
+
+<!-- A day with mmlabs -->
+<section class="classes" id="how" data-name="Workday">
+  <svg class="doodle" style="left:130px;top:100px" width="70" height="70" viewBox="0 0 70 70" fill="none" stroke="#F2B233" stroke-width="4" stroke-linecap="round"><path d="M35 6v14M35 50v14M6 35h14M50 35h14M14 14l10 10M46 46l10 10M56 14L46 24M24 46L14 56"/></svg>
+  <svg class="doodle" style="left:1230px;top:120px" width="44" height="44" viewBox="0 0 24 24" fill="#FF8FAB"><path d="M12 21s-8-5.3-8-11a4.5 4.5 0 018-2.8A4.5 4.5 0 0120 10c0 5.7-8 11-8 11z"/></svg>
+  <div class="container">
+    <h2 class="section-title">A workday with mmlabs</h2>
+    <p class="section-sub">The right little app for each part of the day.</p>
+    <div class="row">
+      <div class="class-card" data-href="{{page:calechip}}">
+        <div class="class-media class-shot" style="background:#FFF1CF"><img src="assets/workday/workday-calechip.svg" alt="Illustration of a CaleChip week view with colourful events, a line marking the current time and a button to add an event" width="652" height="440" loading="lazy"><div class="price" style="font-size:24px">☀</div></div>
+        <div class="class-body">
+          <h3>Plan the day</h3>
+          <p>Start the morning with your calendar in CaleChip and see what is coming up.</p>
+          <div class="class-meta"><div class="chip" style="background:#FFF1CF"><small>App</small>CaleChip</div><div class="chip" style="background:#DCEBFF"><small>When</small>Morning</div></div>
+        </div>
+      </div>
+      <div class="class-card featured" data-href="{{page:ricotdin}}">
+        <div class="class-media class-shot" style="background:#FFDCE5"><img src="assets/workday/workday-ricotdin.svg" alt="Illustration of a Ricotdin recording with a microphone button, an audio waveform and transcript lines below it" width="652" height="440" loading="lazy"><div class="price" style="font-size:24px">🎙</div></div>
+        <div class="class-body">
+          <h3>Capture the meeting</h3>
+          <p>Record with Ricotdin and get a transcript you can come back to.</p>
+          <div class="class-meta"><div class="chip" style="background:#FFDCE5"><small>App</small>Ricotdin</div><div class="chip" style="background:#DCEBFF"><small>When</small>Midday</div></div>
+        </div>
+        <a class="btn" href="{{url:ricotdin}}">Try Ricotdin</a>
+      </div>
+      <div class="class-card" data-href="{{page:seatmgt}}">
+        <div class="class-media class-shot" style="background:#D5F3E6"><img src="assets/workday/workday-seatmgt-certmgt.svg" alt="Illustration of a SeatMGT floor plan with desks, devices and a location pin, next to a CertMGT certificate with skill bars" width="652" height="440" loading="lazy"><div class="price" style="font-size:24px">☾</div></div>
+        <div class="class-body">
+          <h3>Keep things in order</h3>
+          <p>Manage locations and devices in SeatMGT, and certificates and skills in CertMGT.</p>
+          <div class="class-meta"><div class="chip" style="background:#DCEBFF"><small>App</small>SeatMGT</div><div class="chip" style="background:#D5F3E6"><small>App</small>CertMGT</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Why mmlabs -->
+<svg class="wave" viewBox="0 0 1440 70" preserveAspectRatio="none"><path d="M0 70V35C120 0 240 0 360 35C480 70 600 70 720 35C840 0 960 0 1080 35C1200 70 1320 70 1440 35V70Z" fill="#D5F3E6"/></svg>
+<section class="why" data-name="Why mmlabs">
+  <div class="container">
+    <div class="why-card"><div class="why-head"><div class="why-icon" style="background:#FFF1CF"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#1A2442" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/></svg></div><h3>Small and focused</h3></div><p>Each app solves one everyday job, so there is less to learn and less to click.</p></div>
+    <div class="why-card"><div class="why-head"><div class="why-icon" style="background:#DCEBFF"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#1A2442" stroke-width="2.4" stroke-linecap="round"><circle cx="8" cy="12" r="4"/><path d="M12 12h9M18 12v3"/></svg></div><h3>One sign-in</h3></div><p>A single mmlabs account opens every app, now and as new ones arrive.</p></div>
+    <div class="why-card"><div class="why-head"><div class="why-icon" style="background:#FFDCE5"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#1A2442" stroke-width="2.4" stroke-linecap="round"><path d="M12 21v-8M12 13c0-4 3-7 8-7 0 5-3 7-8 7zM12 15c0-3-2-5-6-5 0 4 2 5 6 5z"/></svg></div><h3>Always growing</h3></div><p>The app family keeps growing with new tools built for real work problems.</p></div>
+  </div>
+</section>
+<svg class="wave" viewBox="0 0 1440 70" preserveAspectRatio="none"><path d="M0 0H1440V35C1320 70 1200 70 1080 35C960 0 840 0 720 35C600 70 480 70 360 35C240 0 120 0 0 35Z" fill="#D5F3E6"/></svg>
+
+<!-- Pricing -->
+<section class="pricing" id="pricing" data-name="Pricing">
+  <svg class="doodle" style="left:90px;top:70px" width="40" height="40" viewBox="0 0 24 24" fill="#F2B233"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z"/></svg>
+  <svg class="doodle" style="left:1180px;top:110px" width="34" height="34" viewBox="0 0 24 24" fill="#FF8FAB"><path d="M12 21s-8-5.3-8-11a4.5 4.5 0 018-2.8A4.5 4.5 0 0120 10c0 5.7-8 11-8 11z"/></svg>
+  <div class="container">
+    <h2 class="section-title">Try it free</h2>
+    <p class="section-sub">Ask us for a free trial. Need it for your company? Let's talk.</p>
+    <div class="plans">
+      <div class="plan">
+        <div class="plan-icon" style="background:#D5F3E6"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#1A2442" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21v-8"/><path d="M12 13c0-4 3-7 8-7 0 5-3 7-8 7z" fill="#4CC39A"/><path d="M12 15c0-3-2-5-6-5 0 4 2 5 6 5z" fill="#4CC39A"/></svg></div>
+        <h3>Free trial</h3>
+        <p class="plan-sub">Try mmlabs before you decide.</p>
+        <div class="plan-price">Free<small>to try</small></div>
+        <ul class="plan-list"><li><span class="tick"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"><path d="M5 12l5 5 9-10"/></svg></span>One mmlabs account</li><li><span class="tick"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"><path d="M5 12l5 5 9-10"/></svg></span>Use every app</li><li><span class="tick"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"><path d="M5 12l5 5 9-10"/></svg></span>No payment details needed</li><li><span class="tick"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"><path d="M5 12l5 5 9-10"/></svg></span>Help by email</li></ul>
+        <a class="btn btn-navy" href="#contact" data-prefill="Hi! I'd like a free trial of mmlabs.">Request a free trial</a>
+      </div>
+      <div class="plan plan-featured">
+        <span class="plan-badge">For teams</span>
+        <div class="plan-icon" style="background:#FFF1CF"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#1A2442" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8.5" r="3" fill="#FF8FAB"/><circle cx="16" cy="8.5" r="3" fill="#5B9BF0"/><path d="M3 19c0-3 2.2-5 5-5s5 2 5 5M11 19c0-3 2.2-5 5-5s5 2 5 5"/></svg></div>
+        <h3>Business</h3>
+        <p class="plan-sub">For companies and teams.</p>
+        <div class="plan-price">Let's talk</div>
+        <ul class="plan-list"><li><span class="tick" style="background:#F2B233"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A2442" stroke-width="4" stroke-linecap="round"><path d="M5 12l5 5 9-10"/></svg></span>Everything in the free trial</li><li><span class="tick" style="background:#F2B233"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A2442" stroke-width="4" stroke-linecap="round"><path d="M5 12l5 5 9-10"/></svg></span>Accounts for your whole team</li><li><span class="tick" style="background:#F2B233"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A2442" stroke-width="4" stroke-linecap="round"><path d="M5 12l5 5 9-10"/></svg></span>A plan that fits how you work</li><li><span class="tick" style="background:#F2B233"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A2442" stroke-width="4" stroke-linecap="round"><path d="M5 12l5 5 9-10"/></svg></span>Help to get started</li></ul>
+        <a class="btn" href="#contact" data-prefill="Hi! I'd like to talk about mmlabs for our team.">Contact us</a>
+      </div>
+    </div>
+    <p class="plan-note">Both use the same mmlabs account.</p>
+  </div>
+</section>
+
+<!-- Contact -->
+<section class="enroll" id="contact" data-name="Contact Form">
+  <div class="container">
+    <div class="enroll-text">
+      <h2>What slows your workday down?</h2>
+      <p>Tell us about it. Ask about an app, request early access, or share an idea for the next one.</p>
+      <div class="checks">
+        <div class="check"><span class="tick" style="background:#F2B233"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A2442" stroke-width="4" stroke-linecap="round"><path d="M5 12l5 5 9-10"/></svg></span>Ask about any app</div>
+        <div class="check"><span class="tick" style="background:#F2B233"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1A2442" stroke-width="4" stroke-linecap="round"><path d="M5 12l5 5 9-10"/></svg></span>Suggest the next app we build</div>
+      </div>
+      <svg width="150" height="100" viewBox="0 0 150 100"><rect x="25" y="10" width="100" height="64" rx="10" fill="#FFFFFF" stroke="#1A2442" stroke-width="3"/><rect x="36" y="21" width="36" height="16" rx="5" fill="#F2B233"/><rect x="78" y="21" width="36" height="16" rx="5" fill="#FFDCE5"/><rect x="36" y="43" width="36" height="16" rx="5" fill="#DCEBFF"/><rect x="78" y="43" width="36" height="16" rx="5" fill="#D5F3E6"/><path d="M8 84h134l-12 10H20z" fill="#243259"/></svg>
+    </div>
+    <form class="form" id="contact-form" action="mailto:{{email}}" method="post" enctype="text/plain" novalidate>
+      <h3>Say hello 👋</h3>
+      <div class="row"><input class="field" name="name" placeholder="Your name*" aria-label="Your name" autocomplete="name" required><input class="field" type="email" name="email" placeholder="Work email*" aria-label="Work email" autocomplete="email" required></div>
+      <div class="row"><input class="field" name="company" placeholder="Company or team" aria-label="Company or team" autocomplete="organization"><select class="field" name="app" aria-label="App you're interested in"><option value="">App you're interested in</option><option>CaleChip</option><option>Ricotdin</option><option>SeatMGT</option><option>CertMGT</option><option>An idea for a new app</option></select></div>
+      <div class="row"><textarea class="field area" name="message" placeholder="Tell us what you need*" aria-label="Tell us what you need" required></textarea></div>
+      <p class="field-error" id="contact-error" role="alert" hidden>Add your name, a valid work email and a short message so we can reply.</p>
+      <button class="btn btn-navy" type="submit">Send message</button>
+    </form>
+  </div>
+</section>
+
+<!-- Maker -->
+<section class="staff" id="makers" data-name="Maker">
+  <div class="container">
+    <h2 class="section-title">The maker</h2>
+    <p class="section-sub">Who am I?</p>
+    <div class="maker">
+      <div class="member"><div class="member-ring"><img class="member-photo" src="assets/maker-ming.jpg" alt="Ming Ming, the maker behind mmlabs" width="240" height="240" loading="lazy"></div></div>
+      <div class="maker-text">
+        <h3>Ming Ming</h3>
+        <!-- <p class="maker-role">Products Owner</p> -->
+        <p>Every app here started with a small problem at my work. My calendar took too long to use. I missed things people said in meetings. I spent time looking for a free desk. So I made a simple app for each one. I still use them every day..</p>
+        <div class="maker-actions"><a class="btn" href="#contact">Say hello</a><div class="social">{{social}}</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Updates -->
+<section class="news" id="news" data-name="News">
+  <div class="container">
+    <h2 class="section-title">Fresh from the lab</h2>
+    <p class="section-sub">Release notes, tips and what we're building next.</p>
+    <div class="row">
+      {{posts}}
+    </div>
+  </div>
+</section>
+
+<!-- Newsletter -->
+<section class="newsletter" data-name="Newsletter">
+  <div class="newsletter-card">
+    <svg class="doodle" style="left:-30px;top:-30px" width="70" height="70" viewBox="0 0 24 24" fill="#F2B233" stroke="#1A2442" stroke-width="1.2"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17l-6.1 3.4 1.5-6.8L2.2 9l6.9-.7z"/></svg>
+    <svg class="doodle moon" style="left:1070px;top:100px" width="90" height="90" viewBox="0 0 90 90"><path d="M60 10a38 38 0 100 70 30 30 0 110-70z" fill="#F2B233" stroke="#1A2442" stroke-width="3"/><circle cx="40" cy="40" r="3" fill="#1A2442"/><path d="M34 52c4 4 10 4 12 0" stroke="#1A2442" stroke-width="3" fill="none" stroke-linecap="round"/></svg>
+    <h2>Hear about new apps first<small>Occasional updates when something new ships. No spam.</small></h2>
+    <form class="subscribe" id="subscribe-form" action="mailto:{{email}}?subject=Subscribe" method="post" enctype="text/plain" novalidate><input type="email" name="email" placeholder="Enter your email" aria-label="Your email" autocomplete="email" required><button class="btn" type="submit">Subscribe</button></form>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer" data-name="Footer">
+  <div class="container">
+    <div class="f-col f-brand"><a class="logo-img" href="./"><img src="assets/logo-long.png" alt="mmlabs" width="190" height="101"></a><p>Small, friendly apps for everyday work life. One account opens them all.</p><div class="social">{{social}}</div></div>
+    <div class="f-col"><h4>Apps</h4><a href="{{page:calechip}}">CaleChip</a><a href="{{page:ricotdin}}">Ricotdin</a><a href="{{page:seatmgt}}">SeatMGT</a><a href="{{page:certmgt}}">CertMGT</a></div>
+    <div class="f-col"><h4>mmlabs</h4><a href="#how">How it works</a><a href="#pricing">Pricing</a><a href="#makers">Maker</a><a href="#news">News</a><a href="#contact">Contact us</a></div>
+    <div class="f-col f-contact"><h4>Contact</h4><a href="mailto:{{email}}">{{email}}</a><p>mmlabs.online</p></div>
+  </div>
+  <div class="copyright">Copyright © mmlabs. All rights reserved.</div>
+  <!-- <div class="placeholder footer-art">Footer illustration strip, 1440 × 240</div> -->
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+</body>
+</html>

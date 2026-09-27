@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SeatMGT · Every seat, every device, on one map</title>
+<meta name="description" content="SeatMGT turns the who-sits-where spreadsheet into a living floor plan: seats mapped to network ports, devices tracked to their owners, and seat moves handled by request and approval.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1C1C1C; --ink-soft:#33322F; --mute:#6B6B66; --faint:#9A9A93;
+    --accent:#FB5729; --accent-ink:#C33C13; --accent-tint:#FCEDE6;
+    --paper:#FFFFFF; --surface:#F6F5F2; --surface-2:#EEEDE8; --line:#E6E4DE;
+    --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:22px;
+    --sans:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+    --wrap:1160px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto;}}
+  body{margin:0; background:var(--paper); color:var(--ink-soft);
+    font-family:var(--sans); font-size:16px; line-height:1.6;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;}
+  h1,h2,h3,h4{color:var(--ink); font-weight:800; line-height:1.1; letter-spacing:-.025em; margin:0;}
+  p{margin:0;}
+  .mono{font-family:var(--mono); letter-spacing:-.02em;}
+  .eyebrow{font-weight:700; font-size:12px; letter-spacing:.2em; text-transform:uppercase; color:var(--accent);}
+  .wrap{max-width:var(--wrap); margin:0 auto; padding:0 30px;}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:5px;}
+  a{color:inherit; text-decoration:none;}
+  section[id]{scroll-margin-top:64px;}
+
+  /* top bar */
+  .bar{position:sticky; top:0; z-index:40; background:rgba(255,255,255,.82);
+    backdrop-filter:saturate(140%) blur(10px); border-bottom:1px solid var(--line);}
+  .bar-in{max-width:var(--wrap); margin:0 auto; padding:13px 30px; display:flex; align-items:center; justify-content:space-between; gap:16px;}
+  .brand{display:flex; align-items:center; gap:10px; font-weight:800; color:var(--ink); font-size:15px; letter-spacing:-.01em;}
+  .brand .mark{width:22px; height:22px; border-radius:6px; background:var(--ink); position:relative; flex:none;}
+  .brand .mark::before{content:""; position:absolute; inset:0; margin:auto; width:8px; height:8px; border-radius:2px; background:var(--accent);}
+  .brand .desc{font-weight:500; color:var(--faint); font-size:13px;}
+  .bar nav{display:flex; align-items:center; gap:22px;}
+  .bar nav a{font-size:13.5px; font-weight:600; color:var(--mute); transition:color .15s ease;}
+  .bar nav a:hover{color:var(--ink);}
+
+  /* buttons + status pill */
+  .btn{display:inline-flex; align-items:center; gap:9px; font-family:var(--sans); font-weight:700; font-size:15px;
+    color:#fff; background:var(--accent); padding:13px 22px; border-radius:99px; letter-spacing:-.01em;
+    box-shadow:0 14px 30px -16px rgba(251,87,41,.8); transition:transform .15s ease, background .15s ease, box-shadow .15s ease;}
+  .btn:hover{background:var(--accent-ink); transform:translateY(-1px);}
+  .btn svg{width:16px; height:16px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round;}
+  .cta-row{display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-top:30px;}
+  .pill{display:inline-flex; align-items:center; gap:8px; font-size:12.5px; font-weight:700;
+    color:var(--accent-ink); background:var(--accent-tint); padding:6px 12px; border-radius:99px; white-space:nowrap;}
+  .pill i{width:7px; height:7px; border-radius:99px; background:var(--accent);}
+
+  /* hero */
+  .hero{position:relative; overflow:hidden;
+    background:radial-gradient(130% 80% at 82% -20%, var(--accent-tint) 0%, rgba(252,237,230,0) 55%);}
+  .hero-in{max-width:var(--wrap); margin:0 auto; padding:70px 30px 30px;}
+  .hero h1{font-size:clamp(40px,6.2vw,74px); margin:16px 0 0; max-width:16ch;}
+  .hero h1 .hl{color:var(--accent);}
+  .hero .sub{font-size:clamp(17px,1.8vw,21px); color:var(--mute); max-width:52ch; margin:22px 0 0; line-height:1.5;}
+  .accent-bar{width:60px; height:8px; background:var(--accent); border-radius:99px;}
+
+  /* interactive room map */
+  .demo{margin-top:44px; display:grid; grid-template-columns:1fr 300px; gap:26px; align-items:stretch;}
+  .stage{background:var(--ink); border-radius:var(--r-xl); padding:26px 26px 22px;
+    box-shadow:0 34px 80px -40px rgba(28,28,28,.6); color:#E9E9E6; position:relative; overflow:hidden; min-width:0;}
+  .stage-top{display:flex; justify-content:space-between; align-items:baseline; margin-bottom:18px;}
+  .stage-top .rm{font-family:var(--mono); font-size:13px; color:var(--accent); letter-spacing:.03em;}
+  .stage-top .cap{font-size:10.5px; letter-spacing:.18em; text-transform:uppercase; color:#88887F; font-weight:700;}
+  .room{display:grid; gap:8px; width:100%; min-width:0;}
+  .rrow{display:grid; grid-template-columns:repeat(10,1fr); gap:8px; min-width:0;}
+  .cell{aspect-ratio:1/1; min-width:0; min-height:0;}
+  .seat{width:100%; height:100%; border-radius:8px; background:#2C2C29; border:1px solid transparent;
+    position:relative; cursor:pointer; transition:transform .16s ease, background .16s ease, border-color .16s ease;
+    transform:scale(.4); opacity:0;}
+  .seat.show{transform:scale(1); opacity:1;}
+  .seat.occ{background:#4C4C46;}
+  .seat.prim{background:var(--accent);}
+  .seat.prim::after{content:""; position:absolute; inset:0; margin:auto; width:6px; height:6px; border-radius:99px; background:#fff;}
+  .seat:hover,.seat.sel{transform:scale(1.12); border-color:#fff; z-index:2;}
+  .seat.sel{box-shadow:0 0 0 3px rgba(251,87,41,.5);}
+  .fixture{width:100%; height:100%; border-radius:8px; background:rgba(255,255,255,.02);
+    border:1.5px dashed #48473F; display:flex; align-items:center; justify-content:center;}
+  .legend{display:flex; gap:18px; margin-top:18px; flex-wrap:wrap;}
+  .legend span{display:inline-flex; align-items:center; gap:8px; font-size:11.5px; color:#AEAEA7;}
+  .legend i{width:12px; height:12px; border-radius:4px; display:inline-block;}
+
+  /* detail panel */
+  .panel{background:var(--paper); border:1px solid var(--line); border-radius:var(--r-xl); padding:22px; display:flex; flex-direction:column;}
+  .panel .pcode{font-family:var(--mono); font-size:22px; color:var(--ink); font-weight:500; letter-spacing:-.02em;}
+  .panel .pstate{display:inline-flex; align-items:center; gap:7px; margin-top:10px; font-size:12px; font-weight:600; padding:4px 10px; border-radius:99px; align-self:flex-start;}
+  .pstate.s-empty{background:var(--surface); color:var(--mute); border:1px solid var(--line);}
+  .pstate.s-occ{background:#EEF1EC; color:#2E6B3E;}
+  .pstate.s-prim{background:var(--accent-tint); color:var(--accent-ink);}
+  .pstate i{width:6px; height:6px; border-radius:99px; background:currentColor;}
+  .prow{margin-top:16px; padding-top:14px; border-top:1px solid var(--line);}
+  .prow .k{font-size:11px; letter-spacing:.12em; text-transform:uppercase; color:var(--faint); font-weight:700;}
+  .prow .v{font-size:15px; color:var(--ink); margin-top:3px; font-weight:600;}
+  .prow .v.sub{font-weight:500; color:var(--mute); font-size:13.5px;}
+  .panel .hint{margin-top:auto; padding-top:16px; font-size:12px; color:var(--faint); line-height:1.5;}
+  .panel .summ .big{font-size:34px; font-weight:800; color:var(--ink); letter-spacing:-.03em;}
+
+  /* stat strip */
+  .strip{border-top:1px solid var(--line); border-bottom:1px solid var(--line); background:var(--surface); margin-top:56px;}
+  .strip-in{max-width:var(--wrap); margin:0 auto; padding:0 30px; display:grid; grid-template-columns:repeat(4,1fr);}
+  .stat{padding:26px 8px 26px 0;}
+  .stat .n{font-size:34px; font-weight:800; color:var(--ink); letter-spacing:-.03em; line-height:1;}
+  .stat .n em{color:var(--accent); font-style:normal;}
+  .stat .l{font-size:13px; color:var(--mute); margin-top:7px;}
+
+  /* sections */
+  section{padding:82px 0;}
+  .alt{background:var(--surface); border-top:1px solid var(--line); border-bottom:1px solid var(--line);}
+  .sec-lead{max-width:62ch; margin-bottom:38px;}
+  .sec-lead .eyebrow{display:inline-flex; align-items:center; gap:10px;}
+  .sec-lead .eyebrow .sn{font-family:var(--mono); color:var(--accent); font-weight:500; font-size:12px; letter-spacing:0;}
+  .sec-lead h2{font-size:clamp(28px,3.6vw,42px); margin-top:16px; letter-spacing:-.03em;}
+  .sec-lead p{color:var(--mute); font-size:17px; margin-top:14px; line-height:1.55;}
+
+  /* problem — big statement */
+  .two{display:grid; grid-template-columns:1fr 1fr; gap:56px; align-items:start;}
+  .big-state{font-size:clamp(26px,3.6vw,42px); color:var(--ink); font-weight:800; letter-spacing:-.03em; line-height:1.16; max-width:20ch;}
+  .big-state .q{color:var(--faint);}
+  .two .rt p{font-size:16.5px; color:var(--ink-soft); margin-bottom:15px; line-height:1.62;}
+  .two .rt p:last-child{margin-bottom:0;}
+
+  /* solution pillars */
+  .pillars{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:6px;}
+  .pillar{border-top:2px solid var(--accent); padding-top:16px;}
+  .pillar h4{font-size:16px; letter-spacing:-.01em;}
+  .pillar p{font-size:14px; color:var(--mute); margin-top:7px; line-height:1.55;}
+
+  /* rules the app keeps */
+  .arch-sub{font-size:16px; font-weight:800; color:var(--ink); margin:46px 0 16px; letter-spacing:-.02em;}
+  .rules{display:grid; grid-template-columns:repeat(2,1fr); gap:14px;}
+  .rule{display:flex; gap:16px; align-items:flex-start; padding:18px 20px; border:1px solid var(--line); border-radius:var(--r-md); background:var(--paper);}
+  .rule .rn{font-family:var(--mono); font-size:13px; color:var(--accent); font-weight:500; padding-top:1px;}
+  .rule p{font-size:14.5px; color:var(--ink-soft); line-height:1.5;}
+  .rule b{color:var(--ink);}
+
+  /* capability cards */
+  .cards{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+  .card{border:1px solid var(--line); border-radius:var(--r-lg); padding:24px 22px; background:var(--paper);
+    transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;}
+  .card:hover{transform:translateY(-3px); box-shadow:0 20px 40px -28px rgba(28,28,28,.35); border-color:#DAD8D1;}
+  .card .ic{width:42px; height:42px; border-radius:11px; background:var(--ink); display:flex; align-items:center; justify-content:center; margin-bottom:16px;}
+  .card .ic svg{width:21px; height:21px; stroke:var(--accent); fill:none; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round;}
+  .card h3{font-size:17.5px; letter-spacing:-.01em;}
+  .card p{font-size:14px; color:var(--mute); margin-top:9px; line-height:1.58;}
+  .card .tag{font-family:var(--mono); font-size:11px; color:var(--accent-ink); margin-top:14px; display:block;}
+
+  /* flow */
+  .flow-sec{background:var(--ink); color:#DEDEDA;}
+  .flow-sec .sec-lead .eyebrow, .flow-sec .sec-lead .eyebrow .sn{color:var(--accent);}
+  .flow-sec .sec-lead h2{color:#fff;}
+  .flow-sec .sec-lead p{color:#9E9E97;}
+  .flow{display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-top:8px;}
+  .step{position:relative; padding:24px 20px; border:1px solid #333330; border-radius:var(--r-lg); background:#232320;}
+  .step .sn{font-family:var(--mono); font-size:13px; color:var(--accent); font-weight:500;}
+  .step h4{color:#fff; font-size:16px; font-weight:700; margin:12px 0 8px; letter-spacing:-.01em;}
+  .step p{color:#9E9E97; font-size:13.5px; line-height:1.55;}
+  .step .arr{position:absolute; right:-12px; top:50%; transform:translateY(-50%); color:#4A4A46; z-index:2;}
+  .step:last-child .arr{display:none;}
+
+  /* personas */
+  .personas{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+  .persona{border:1px solid var(--line); border-radius:var(--r-lg); padding:26px 24px; background:var(--paper);}
+  .persona .role{font-family:var(--mono); font-size:11.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent-ink);}
+  .persona h3{font-size:20px; margin:9px 0 3px; letter-spacing:-.02em;}
+  .persona .who-tag{color:var(--mute); font-size:13.5px; margin-bottom:16px;}
+  ul.clean{list-style:none; margin:0; padding:0;}
+  ul.clean li{position:relative; padding:5px 0 5px 20px; font-size:14px; color:var(--ink-soft);}
+  ul.clean li::before{content:""; position:absolute; left:2px; top:13px; width:6px; height:6px; border-radius:2px; background:var(--accent);}
+
+  /* close */
+  .close{background:var(--ink); text-align:center; padding:100px 0 104px;}
+  .close .big-state{color:#fff; margin:0 auto 18px; max-width:24ch;}
+  .close .lede{color:#9E9E97; font-size:17px; max-width:52ch; margin:0 auto; line-height:1.55;}
+  .close .cta-row{justify-content:center; margin-top:32px;}
+  .close .meta{display:inline-flex; gap:10px; align-items:center; font-family:var(--mono); font-size:13px; color:#B7B7B1;
+    background:#242421; border:1px solid #35352F; padding:9px 16px; border-radius:99px;}
+  .close .meta .g{width:6px; height:6px; border-radius:99px; background:var(--accent);}
+
+  footer{border-top:1px solid var(--line); background:var(--surface);}
+  .foot{max-width:var(--wrap); margin:0 auto; padding:24px 30px; display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:13px; color:var(--mute);}
+  .foot a:hover{color:var(--ink);}
+
+  .reveal{opacity:0; transform:translateY(18px); transition:opacity .7s ease, transform .7s ease;}
+  .reveal.in{opacity:1; transform:none;}
+  @media (prefers-reduced-motion:reduce){
+    .reveal{opacity:1; transform:none; transition:none;}
+    .seat{transform:scale(1); opacity:1;}
+  }
+
+  @media (max-width:960px){
+    .demo{grid-template-columns:1fr;}
+    .panel{flex-direction:row; align-items:center; gap:22px; flex-wrap:wrap;}
+    .panel .hint{display:none;}
+    .two{grid-template-columns:1fr; gap:26px;}
+    .cards,.personas,.pillars{grid-template-columns:1fr 1fr;}
+    .flow{grid-template-columns:1fr 1fr;} .step .arr{display:none;}
+    .rules{grid-template-columns:1fr;}
+    .bar nav a:not(.btn){display:none;}
+  }
+  @media (max-width:620px){
+    .hero-in{padding-top:48px;}
+    .bar-in{padding:11px 16px;}
+    .brand .desc{display:none;}
+    .wrap,.strip-in,.foot{padding-left:16px; padding-right:16px;}
+    .hero-in{padding-left:16px; padding-right:16px;}
+    .strip-in{grid-template-columns:1fr 1fr;}
+    .stat:nth-child(-n+2){border-bottom:1px solid var(--line);}
+    .cards,.personas,.pillars,.flow{grid-template-columns:1fr;}
+    .rrow{gap:6px;} .room{gap:6px;}
+    .stage{padding:20px 16px 18px;}
+    .foot{flex-direction:column;}
+  }
+  @media print{
+    .bar{position:static;} .stage{box-shadow:none;} .reveal{opacity:1; transform:none;}
+    section{padding:40px 0;} .card:hover{transform:none; box-shadow:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <div class="bar-in">
+    <a class="brand" href="#top"><span class="mark"></span>SeatMGT <span class="desc">Seat and device tracking</span></a>
+    <nav aria-label="On this page">
+      <a href="#how">How it works</a>
+      <a href="#inside">Features</a>
+      <a href="#who">Who it's for</a>
+    </nav>
+  </div>
+</div>
+
+<!-- HERO -->
+<header class="hero" id="top">
+  <div class="hero-in">
+    <div class="accent-bar"></div>
+    <div class="eyebrow" style="margin-top:18px;">SeatMGT · Seat and device tracking</div>
+    <h1>Every seat, every device, <span class="hl">on one map.</span></h1>
+    <p class="sub">SeatMGT replaces the who-sits-where spreadsheet with a living floor plan. Every seat is mapped to its network port, every device is tracked to its owner, and seat moves go through a simple request and approval.</p>
+
+    <div class="cta-row">
+      <a class="btn" href="https://seatmgt.mmlabs.online">Open SeatMGT
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      <span class="pill"><i></i>In development · early access</span>
+    </div>
+
+    <div class="demo">
+      <div class="stage">
+        <div class="stage-top">
+          <span class="rm">Room C302</span>
+          <span class="cap">Interactive · tap a seat</span>
+        </div>
+        <div class="room" id="room" role="group" aria-label="Interactive room map"></div>
+        <div class="legend">
+          <span><i style="background:#2C2C29"></i>Empty</span>
+          <span><i style="background:#4C4C46"></i>Occupied</span>
+          <span><i style="background:#FB5729"></i>Primary device</span>
+          <span><i style="background:transparent;border:1px dashed #48473F"></i>Fixture</span>
+        </div>
+      </div>
+      <aside class="panel" id="panel" aria-live="polite"></aside>
+    </div>
+  </div>
+
+  <div class="strip">
+    <div class="strip-in">
+      <div class="stat"><div class="n" id="k-seats">—</div><div class="l">Seats in this room</div></div>
+      <div class="stat"><div class="n" id="k-occ">—</div><div class="l">Currently occupied</div></div>
+      <div class="stat"><div class="n" id="k-dev"><em>—</em></div><div class="l">Primary devices placed</div></div>
+      <div class="stat"><div class="n" id="k-free">—</div><div class="l">Open to request</div></div>
+    </div>
+  </div>
+</header>
+
+<!-- 01 THE PROBLEM -->
+<section id="problem">
+  <div class="wrap two">
+    <div class="lt">
+      <div class="sec-lead" style="margin-bottom:0">
+        <span class="eyebrow"><span class="sn">01</span> The problem</span>
+      </div>
+      <p class="big-state" style="margin-top:16px">Spreadsheets don't know who moved. <span class="q">The floor does.</span></p>
+    </div>
+    <div class="rt">
+      <p>Seats are wired to specific network ports. Devices change hands. People take a second desk, lend a monitor, or quietly move across the room, and your tracking sheet is out of date the moment they do.</p>
+      <p>The cost isn't just a stale file. You don't know which port a machine is on, who owns what, or where the free seats actually are. Every reshuffle turns into a manual hunt, and nobody trusts the numbers.</p>
+    </div>
+  </div>
+</section>
+
+<!-- 02 THE SOLUTION -->
+<section class="alt" id="solution">
+  <div class="wrap">
+    <div class="sec-lead reveal">
+      <span class="eyebrow"><span class="sn">02</span> The solution</span>
+      <h2>A living floor plan, backed by rules.</h2>
+      <p>SeatMGT keeps every room, seat, device and person as a real record. Each seat maps to exactly one network port, people get seats by request and approval, and devices are tracked to whoever owns them. What you see on the map is what's actually true.</p>
+    </div>
+    <div class="pillars">
+      <div class="pillar reveal"><h4>One source of truth</h4><p>One place to see who sits where and what's plugged into which port, always current.</p></div>
+      <div class="pillar reveal"><h4>Mistakes can't be saved</h4><p>The app won't accept a double-booked seat or a device on the wrong desk. It doesn't just warn you; it stops the change.</p></div>
+      <div class="pillar reveal"><h4>Self-service with oversight</h4><p>People request seats, managers approve, admins own the floor. Moves happen quickly and stay under control.</p></div>
+    </div>
+
+    <div class="arch-sub reveal">Rules SeatMGT keeps for you</div>
+    <div class="rules">
+      <div class="rule reveal"><span class="rn">01</span><p><b>One occupant per seat.</b> A person can hold several seats, but a seat is never double-booked.</p></div>
+      <div class="rule reveal"><span class="rn">02</span><p><b>The primary device belongs to the occupant.</b> A seat's primary device is always owned by whoever sits there.</p></div>
+      <div class="rule reveal"><span class="rn">03</span><p><b>Status comes from the occupant.</b> Empty or occupied is worked out from who is assigned, so it can't fall out of sync.</p></div>
+      <div class="rule reveal"><span class="rn">04</span><p><b>Clean release when someone leaves.</b> Leaving a seat releases that person's primary device from it. No leftover links.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 03 HOW IT WORKS -->
+<section class="flow-sec" id="how">
+  <div class="wrap">
+    <div class="sec-lead reveal">
+      <span class="eyebrow"><span class="sn">03</span> How it works</span>
+      <h2>From an empty desk to a tracked device, in four moves.</h2>
+      <p>This is the everyday path. The rules do their work quietly in the background.</p>
+    </div>
+    <div class="flow">
+      <div class="step reveal"><div class="sn">01</div><h4>Request</h4><p>Pick an open seat on the map and send a request. It waits in a queue for a manager.</p>
+        <svg class="arr" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="step reveal"><div class="sn">02</div><h4>Approve</h4><p>A manager approves the request, or assigns someone directly. The seat now has its occupant.</p>
+        <svg class="arr" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="step reveal"><div class="sn">03</div><h4>Place device</h4><p>Your machine becomes the seat's primary device, tied to that seat's network port.</p>
+        <svg class="arr" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="step reveal"><div class="sn">04</div><h4>Release</h4><p>When you leave, the seat opens up and your primary device is released from it. Nothing is left dangling.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 04 WHAT'S INSIDE -->
+<section id="inside">
+  <div class="wrap">
+    <div class="sec-lead reveal">
+      <span class="eyebrow"><span class="sn">04</span> What's inside</span>
+      <h2>Six parts, working as one.</h2>
+      <p>Rooms, seats, devices and people all live in one place, so the map you look at is always the real picture.</p>
+    </div>
+    <div class="cards">
+      <div class="card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>
+        <h3>Visual layout designer</h3>
+        <p>Drag seats onto a grid that mirrors the real room. Every tile is a real seat, and each new seat gets its port code automatically.</p>
+        <span class="tag">Rooms · Layout</span>
+      </div>
+      <div class="card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 11V8a3 3 0 0 1 3-3h1"/><rect x="4" y="11" width="16" height="7" rx="2"/><path d="M7 18v2M17 18v2"/></svg></div>
+        <h3>Seats mapped to ports</h3>
+        <p>Each seat carries a code like <span class="mono">C302-01</span>, tied to its network port. Its status comes from who's sitting there, never from a guess.</p>
+        <span class="tag">Seats</span>
+      </div>
+      <div class="card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+        <h3>Request &amp; approve</h3>
+        <p>Request an open seat; a manager approves it or assigns one directly. Seating stays controlled, with a clear record of who decided what.</p>
+        <span class="tag">Requests</span>
+      </div>
+      <div class="card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+        <h3>Device ownership</h3>
+        <p>One primary device per seat, owned by whoever sits there. Spare devices wait in inventory, and a device is released as soon as its owner leaves the seat.</p>
+        <span class="tag">Devices</span>
+      </div>
+      <div class="card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg></div>
+        <h3>Members &amp; groups</h3>
+        <p>See each person's seats and devices in one view, with group and project labels for context. Labels help you find people; they never restrict access.</p>
+        <span class="tag">Members · Groups</span>
+      </div>
+      <div class="card reveal">
+        <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></div>
+        <h3>Access &amp; audit log</h3>
+        <p>Your role decides what you can see and do. An audit log records every seat assignment and device move: who did what, and when.</p>
+        <span class="tag">Roles · Audit log</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 05 WHO IT'S FOR -->
+<section class="alt" id="who">
+  <div class="wrap">
+    <div class="sec-lead reveal">
+      <span class="eyebrow"><span class="sn">05</span> Who it's for</span>
+      <h2>Three roles, one clear line of control.</h2>
+      <p>Everyone works from the same map. Your role decides what you can do on it.</p>
+    </div>
+    <div class="personas">
+      <div class="persona reveal">
+        <div class="role">Admin</div>
+        <h3>Owns the floor</h3>
+        <div class="who-tag">Facilities &amp; IT leads</div>
+        <ul class="clean">
+          <li>Create rooms and design layouts</li>
+          <li>Manage every device and inventory item</li>
+          <li>Manage accounts and members</li>
+          <li>Approve requests or assign any seat</li>
+        </ul>
+      </div>
+      <div class="persona reveal">
+        <div class="role">Manager</div>
+        <h3>Keeps seating moving</h3>
+        <div class="who-tag">Team &amp; office managers</div>
+        <ul class="clean">
+          <li>Approve or reject seat requests</li>
+          <li>Assign seats to members directly</li>
+          <li>Manage accounts and members</li>
+          <li>Place and manage their own devices</li>
+        </ul>
+      </div>
+      <div class="persona reveal">
+        <div class="role">User</div>
+        <h3>Finds a desk, manages their kit</h3>
+        <div class="who-tag">Everyone on the floor</div>
+        <ul class="clean">
+          <li>View every seat and its status</li>
+          <li>Request an open seat for approval</li>
+          <li>Manage their own devices</li>
+          <li>Release a seat or device they're done with</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CLOSE -->
+<section class="close">
+  <div class="wrap">
+    <p class="big-state reveal">One floor plan that always tells the truth.</p>
+    <p class="lede reveal">Know who sits where, which port each machine is on, and which seats are free, without chasing a spreadsheet.</p>
+    <div class="cta-row">
+      <a class="btn" href="https://seatmgt.mmlabs.online">Open SeatMGT
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      <span class="meta"><span class="g"></span>In development · early access</span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="foot">
+    <span>SeatMGT · Every seat, every device, on one map.</span>
+    <a href="https://seatmgt.mmlabs.online">seatmgt.mmlabs.online</a>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var layout = [
+    "po.o..op.o",
+    "o.oo.o.oo.",
+    ".o.##..o.o",
+    "op.##.o.po",
+    ".o.o.oo.o.",
+    "o.op..oo.p"
+  ];
+  var people = [
+    ["Mai Tran","Platform"],["Long Vo","Network Ops"],["Huy Pham","Backend"],
+    ["An Nguyen","Design"],["Quan Le","QA"],["Thao Do","Data"],
+    ["Nam Bui","Security"],["Linh Ha","Backend"],["Khoa Ly","Platform"],
+    ["Trang Vu","Frontend"],["Duc Ngo","DevOps"],["Yen Cao","Data"],
+    ["Son Dang","Network Ops"],["Ha Truong","Design"],["Vinh Ta","QA"]
+  ];
+  var devices = [
+    ["Dell OptiPlex 7010","INV-24418"],["Lenovo M90q","INV-24902"],
+    ["HP EliteDesk 800","INV-25120"],["Mac mini M2","INV-25507"],
+    ["Dell Precision 3660","INV-24771"],["ThinkStation P360","INV-25988"]
+  ];
+
+  var room=document.getElementById("room"), panel=document.getElementById("panel");
+  var seats=[], pIdx=0, dIdx=0, code=0, totalSeats=0, occupied=0, primaries=0;
+
+  layout.forEach(function(rowStr){
+    var row=document.createElement("div"); row.className="rrow";
+    rowStr.split("").forEach(function(ch){
+      var cell=document.createElement("div"); cell.className="cell";
+      if(ch==="#"){ var f=document.createElement("div"); f.className="fixture"; cell.appendChild(f); row.appendChild(cell); return; }
+      totalSeats++; code++;
+      var c="C302-"+String(code).padStart(2,"0");
+      var state= ch==="p"?"prim": ch==="o"?"occ":"empty";
+      var data={code:c,state:state,name:null,team:null,device:null,inv:null};
+      if(state!=="empty"){ occupied++; var pr=people[pIdx%people.length]; pIdx++; data.name=pr[0]; data.team=pr[1];
+        if(state==="prim"){ primaries++; var dv=devices[dIdx%devices.length]; dIdx++; data.device=dv[0]; data.inv=dv[1]; } }
+      var s=document.createElement("button");
+      s.className="seat"+(state==="prim"?" prim":state==="occ"?" occ":"");
+      s.type="button"; s.setAttribute("aria-label",c+" "+state); s._data=data;
+      s.addEventListener("mouseenter",function(){render(data,s);});
+      s.addEventListener("focus",function(){render(data,s);});
+      s.addEventListener("click",function(){render(data,s);});
+      cell.appendChild(s); seats.push(s); row.appendChild(cell);
+    });
+    room.appendChild(row);
+  });
+
+  function clearSel(){ seats.forEach(function(x){x.classList.remove("sel");}); }
+  function summary(){
+    panel.innerHTML='<div class="summ">'+
+      '<div class="pcode" style="font-family:var(--sans);font-weight:800;font-size:19px;letter-spacing:-.02em">Room overview</div>'+
+      '<div class="prow"><div class="k">Occupancy</div><div class="v"><span class="big">'+Math.round(occupied/totalSeats*100)+'%</span></div><div class="v sub">'+occupied+' of '+totalSeats+' seats in use</div></div>'+
+      '<div class="prow"><div class="k">Primary devices</div><div class="v">'+primaries+' placed</div></div>'+
+      '<div class="prow"><div class="k">Open to request</div><div class="v">'+(totalSeats-occupied)+' seats</div></div>'+
+      '</div><div class="hint">Hover or tap any seat to inspect its port, occupant, and device.</div>';
+  }
+  function render(d,el){
+    clearSel(); if(el) el.classList.add("sel");
+    var label= d.state==="prim"?"Occupied · primary device": d.state==="occ"?"Occupied":"Empty · available";
+    var cls= d.state==="prim"?"s-prim": d.state==="occ"?"s-occ":"s-empty";
+    var html='<div class="pcode">'+d.code+'</div><div class="pstate '+cls+'"><i></i>'+label+'</div>';
+    if(d.name) html+='<div class="prow"><div class="k">Occupant</div><div class="v">'+d.name+'</div><div class="v sub">'+d.team+'</div></div>';
+    if(d.device) html+='<div class="prow"><div class="k">Primary device</div><div class="v">'+d.device+'</div><div class="v sub mono">'+d.inv+'</div></div>';
+    else if(d.state==="occ") html+='<div class="prow"><div class="k">Primary device</div><div class="v sub">None assigned</div></div>';
+    else html+='<div class="prow"><div class="k">Action</div><div class="v sub">Submit a seat request for approval</div></div>';
+    html+='<div class="hint">This seat maps to exactly one network port. Its status comes from the occupant.</div>';
+    panel.innerHTML=html;
+  }
+  summary();
+
+  var reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(reduce){ seats.forEach(function(s){s.classList.add("show");}); }
+  else { seats.forEach(function(s,i){ setTimeout(function(){s.classList.add("show");},120+i*22); }); }
+
+  function countUp(id,target,suffix){
+    var elm=document.getElementById(id); if(!elm) return;
+    if(reduce){ elm.innerHTML=(suffix==="em")?'<em>'+target+'</em>':target; return; }
+    var start=null,dur=900;
+    function tick(ts){ if(!start)start=ts; var p=Math.min((ts-start)/dur,1); var v=Math.round(p*target);
+      elm.innerHTML=(suffix==="em")?'<em>'+v+'</em>':v; if(p<1) requestAnimationFrame(tick); }
+    requestAnimationFrame(tick);
+  }
+  var statsDone=false;
+  function fireStats(){ if(statsDone)return; statsDone=true;
+    countUp("k-seats",totalSeats); countUp("k-occ",occupied); countUp("k-dev",primaries,"em"); countUp("k-free",totalSeats-occupied); }
+
+  if("IntersectionObserver" in window){
+    var ro=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add("in"); ro.unobserve(e.target);} }); },{rootMargin:"0px 0px -8% 0px",threshold:0.08});
+    document.querySelectorAll(".reveal").forEach(function(n){ ro.observe(n); });
+    var strip=document.querySelector(".strip");
+    var so=new IntersectionObserver(function(es){ es.forEach(function(e){ if(e.isIntersecting){ fireStats(); so.disconnect(); } }); },{threshold:0.4});
+    if(strip) so.observe(strip);
+  } else {
+    document.querySelectorAll(".reveal").forEach(function(n){ n.classList.add("in"); }); fireStats();
+  }
+})();
+</script>
+</body>
+</html>

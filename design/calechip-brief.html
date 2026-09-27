@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ai Nghỉ? — Lịch nghỉ &amp; WFH của cả team</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* Bảng màu = chính là bộ trạng thái của app */
+  --pto:#FF9E7D;        /* nghỉ phép  */
+  --pto-soft:#FFE8DF;
+  --wfh:#4FC9AC;        /* làm từ xa  */
+  --wfh-soft:#DDF6EF;
+  --holiday:#A88BEB;    /* ngày lễ    */
+  --holiday-soft:#EDE6FF;
+  --alert:#FF6F9C;      /* quá tải    */
+  --alert-soft:#FFE3EC;
+  --star:#FFC93C;       /* đã duyệt   */
+
+  --ink:#241F45;
+  --ink-2:#5A5480;
+  --ink-3:#8F89B3;
+  --bg:#F1EFFA;
+  --card:#FFFFFF;
+  --line:#E4E0F4;
+
+  --r-s:8px; --r-m:16px; --r-l:26px; --r-xl:38px;
+  --shadow:0 2px 0 rgba(36,31,69,.05), 0 18px 40px -22px rgba(36,31,69,.35);
+  --shadow-lift:0 2px 0 rgba(36,31,69,.06), 0 30px 60px -26px rgba(36,31,69,.45);
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:'Be Vietnam Pro',system-ui,sans-serif;
+  font-weight:400; line-height:1.65; -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+h1,h2,h3,.display{font-family:'Baloo 2',system-ui,sans-serif; line-height:1.15; margin:0; letter-spacing:-.01em}
+p{margin:0}
+.mono{font-family:'JetBrains Mono',monospace}
+
+.wrap{max-width:1120px; margin:0 auto; padding:0 24px}
+section{position:relative}
+
+/* ---------- nhãn đầu mục ---------- */
+.eyebrow{
+  display:inline-flex; align-items:center; gap:8px;
+  font-size:12px; font-weight:600; letter-spacing:.14em; text-transform:uppercase;
+  color:var(--ink-3); margin-bottom:14px;
+}
+.eyebrow::before{content:""; width:22px; height:2px; border-radius:2px; background:var(--ink-3); opacity:.45}
+
+/* ---------- nền trang trí ---------- */
+.blob{position:absolute; border-radius:50%; filter:blur(70px); opacity:.5; pointer-events:none; z-index:0}
+
+/* ================= HERO ================= */
+header.hero{padding:34px 0 20px; position:relative; overflow:hidden}
+.brandbar{display:flex; align-items:center; justify-content:space-between; gap:16px; position:relative; z-index:2}
+.brand{display:flex; align-items:center; gap:11px; font-family:'Baloo 2'; font-weight:700; font-size:21px}
+.brand .mark{
+  width:38px; height:38px; border-radius:13px; background:var(--ink); color:#fff;
+  display:grid; place-items:center; font-size:19px; transform:rotate(-6deg);
+  box-shadow:0 6px 0 -2px var(--holiday);
+}
+.tagpill{
+  font-size:12.5px; font-weight:500; color:var(--ink-2); background:var(--card);
+  border:1px solid var(--line); padding:7px 14px; border-radius:999px;
+}
+
+.hero-grid{display:grid; grid-template-columns:minmax(0,1fr); gap:34px; padding:46px 0 10px; position:relative; z-index:2}
+h1{font-size:clamp(38px,6.4vw,72px); font-weight:800; max-width:14ch}
+h1 .hl{position:relative; white-space:nowrap}
+h1 .hl::after{
+  content:""; position:absolute; left:-2px; right:-2px; bottom:.1em; height:.34em;
+  background:var(--wfh); opacity:.4; border-radius:4px; z-index:-1;
+}
+.lede{font-size:clamp(16px,2vw,19px); color:var(--ink-2); max-width:56ch; margin-top:20px; font-weight:300}
+.lede b{font-weight:600; color:var(--ink)}
+.hero-cta{display:flex; flex-wrap:wrap; gap:12px; margin-top:30px}
+.btn{
+  display:inline-flex; align-items:center; gap:9px; border-radius:999px; padding:13px 24px;
+  font-family:'Be Vietnam Pro'; font-size:15px; font-weight:600; text-decoration:none;
+  border:1.5px solid transparent; cursor:pointer; transition:transform .16s, box-shadow .16s;
+}
+.btn:hover{transform:translateY(-2px)}
+.btn-primary{background:var(--ink); color:#fff; box-shadow:0 5px 0 0 var(--holiday)}
+.btn-primary:hover{box-shadow:0 8px 0 0 var(--holiday)}
+.btn-ghost{background:var(--card); color:var(--ink); border-color:var(--line)}
+.btn:focus-visible{outline:3px solid var(--holiday); outline-offset:3px}
+
+/* ---------- MOCKUP: dải lịch năm (signature) ---------- */
+.demo{
+  background:var(--card); border-radius:var(--r-xl); padding:22px; box-shadow:var(--shadow-lift);
+  border:1px solid var(--line); position:relative;
+}
+.demo-head{display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; padding:2px 6px 16px}
+.demo-title{font-family:'Baloo 2'; font-weight:700; font-size:17px}
+.demo-sub{font-size:12.5px; color:var(--ink-3)}
+
+.cal{width:100%; border-collapse:separate; border-spacing:0}
+.cal th{font-weight:500; font-size:11px; color:var(--ink-3); padding:0 0 9px; text-align:center}
+.cal th .d{font-family:'JetBrains Mono'; font-size:13px; font-weight:600; color:var(--ink-2); display:block}
+.cal th.hol .d{color:var(--holiday)}
+.cal th.hol{color:var(--holiday)}
+.cal td{padding:2px}
+.cal .who{
+  text-align:left; padding:2px 12px 2px 2px; white-space:nowrap;
+  font-size:13.5px; font-weight:500; width:1%;
+}
+.cal .who span.av{
+  display:inline-grid; place-items:center; width:26px; height:26px; border-radius:9px;
+  background:var(--bg); margin-right:8px; font-size:14px; vertical-align:-7px;
+}
+.cell{
+  height:34px; border-radius:var(--r-s); background:#F7F6FC; position:relative;
+  display:block; transition:transform .2s cubic-bezier(.34,1.4,.64,1), opacity .3s;
+}
+.cell.weekend{background:transparent; border:1px dashed var(--line)}
+.cell.hol{background:var(--holiday-soft)}
+.cell.pto{background:var(--pto)}
+.cell.wfh{background:var(--wfh)}
+.cell.tent{background:transparent; border:2px dashed var(--pto); }
+.cell.tent.w{border-color:var(--wfh)}
+.cell.star::after{
+  content:"★"; position:absolute; top:-4px; right:-3px; font-size:12px; color:var(--star);
+  text-shadow:0 0 0 #fff, 1px 1px 0 #fff, -1px 1px 0 #fff, 1px -1px 0 #fff, -1px -1px 0 #fff;
+}
+.cal td:hover .cell:not(.weekend){transform:scale(1.14)}
+
+/* cột quá tải */
+.col-alert{position:relative}
+.alert-band{
+  position:absolute; top:0; bottom:0; border-radius:12px;
+  background:var(--alert-soft); border:2px solid var(--alert); pointer-events:none;
+  opacity:0; transition:opacity .5s ease;
+}
+.alert-band.show{opacity:1}
+.alert-band .flag{
+  position:absolute; top:-13px; left:50%; transform:translateX(-50%);
+  background:var(--alert); color:#fff; font-size:10.5px; font-weight:700; letter-spacing:.04em;
+  padding:3px 10px; border-radius:999px; white-space:nowrap; font-family:'Be Vietnam Pro';
+}
+
+.toast{
+  margin-top:18px; display:flex; align-items:flex-start; gap:12px;
+  background:var(--alert-soft); border:1.5px solid var(--alert); border-radius:var(--r-m);
+  padding:13px 16px; opacity:0; transform:translateY(8px); transition:all .45s ease .1s;
+}
+.toast.show{opacity:1; transform:none}
+.toast .ico{font-size:18px; line-height:1.4}
+.toast p{font-size:13.5px; color:var(--ink); line-height:1.5}
+.toast b{font-weight:700}
+.toast .sm{color:var(--ink-2); font-size:12.5px; margin-top:2px}
+
+/* ================= chú giải trạng thái ================= */
+.legend{display:flex; flex-wrap:wrap; gap:10px; margin-top:20px; padding:0 4px}
+.lg{display:inline-flex; align-items:center; gap:8px; font-size:12.5px; color:var(--ink-2); font-weight:500}
+.lg i{width:20px; height:20px; border-radius:6px; display:block; flex:none}
+.lg i.pto{background:var(--pto)} .lg i.wfh{background:var(--wfh)}
+.lg i.tent{border:2px dashed var(--pto); background:transparent}
+.lg i.hol{background:var(--holiday-soft); border:1px solid var(--holiday)}
+.lg i.alert{background:var(--alert-soft); border:2px solid var(--alert)}
+.lg i.star{background:var(--pto); position:relative}
+.lg i.star::after{content:"★"; position:absolute; inset:0; display:grid; place-items:center; color:var(--star); font-size:12px}
+
+/* ================= khối chung ================= */
+.band{padding:96px 0}
+.band-title{font-size:clamp(28px,4vw,42px); font-weight:700; max-width:20ch}
+.band-lede{color:var(--ink-2); font-size:16.5px; max-width:60ch; margin-top:16px; font-weight:300}
+
+/* ---------- vấn đề ---------- */
+.problem{background:var(--ink); color:#fff; border-radius:var(--r-xl); padding:clamp(32px,5vw,64px); position:relative; overflow:hidden}
+.problem .band-title{color:#fff}
+.problem .band-lede{color:#B9B3DC}
+.pgrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:20px; margin-top:44px}
+.pcard{background:rgba(255,255,255,.055); border:1px solid rgba(255,255,255,.12); border-radius:var(--r-l); padding:24px}
+.pcard .n{font-family:'JetBrains Mono'; font-size:12px; color:var(--holiday); font-weight:600; letter-spacing:.1em}
+.pcard h3{font-size:19px; margin:12px 0 9px; color:#fff}
+.pcard p{font-size:14px; color:#B9B3DC; font-weight:300; line-height:1.6}
+
+/* ---------- 3 chế độ xem ---------- */
+.tabs{display:inline-flex; gap:5px; background:var(--card); border:1px solid var(--line); padding:5px; border-radius:999px; margin-top:34px}
+.tab{
+  border:0; background:transparent; cursor:pointer; padding:9px 20px; border-radius:999px;
+  font-family:'Be Vietnam Pro'; font-size:14px; font-weight:600; color:var(--ink-2); transition:.18s;
+}
+.tab[aria-selected="true"]{background:var(--ink); color:#fff}
+.tab:focus-visible{outline:3px solid var(--holiday); outline-offset:2px}
+.panes{margin-top:22px}
+.pane{display:none; animation:fade .35s ease}
+.pane.on{display:block}
+@keyframes fade{from{opacity:0; transform:translateY(10px)} to{opacity:1; transform:none}}
+.pane-note{font-size:14px; color:var(--ink-2); margin-top:16px; max-width:64ch; font-weight:300}
+.pane-note b{font-weight:600; color:var(--ink)}
+
+/* tuần */
+.week{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px}
+.wday{background:var(--bg); border-radius:var(--r-m); padding:14px; min-height:170px; border:1px solid transparent}
+.wday.hol{background:var(--holiday-soft); border-color:#D6C8FF}
+.wday.over{background:var(--alert-soft); border-color:var(--alert)}
+.wday .hd{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:12px}
+.wday .dow{font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3)}
+.wday .num{font-family:'JetBrains Mono'; font-size:20px; font-weight:600}
+.chip{
+  display:flex; align-items:center; gap:7px; background:#fff; border-radius:10px;
+  padding:6px 9px; font-size:12.5px; font-weight:500; margin-bottom:6px; position:relative;
+  border-left:4px solid var(--pto);
+}
+.chip.w{border-left-color:var(--wfh)}
+.chip.t{border-style:dashed; border:1.5px dashed var(--pto); border-left-width:4px}
+.chip .em{font-size:13px}
+.chip .st{margin-left:auto; color:var(--star); font-size:12px}
+.chip .half{margin-left:auto; font-size:10.5px; color:var(--ink-3); font-family:'JetBrains Mono'}
+.wday .tally{font-size:11.5px; color:var(--ink-3); margin-top:10px; font-weight:500}
+.wday.over .tally{color:#C43A6B; font-weight:600}
+
+/* tháng */
+.month{display:grid; grid-template-columns:repeat(7,1fr); gap:6px}
+.mhead{font-size:11px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); text-align:center; padding-bottom:4px}
+.mcell{
+  background:var(--bg); border-radius:12px; min-height:78px; padding:7px; position:relative;
+  border:1px solid transparent; transition:transform .18s;
+}
+.mcell:hover{transform:translateY(-3px)}
+.mcell.out{opacity:.3}
+.mcell.hol{background:var(--holiday-soft); border-color:#D6C8FF}
+.mcell.over{background:var(--alert-soft); border-color:var(--alert)}
+.mcell .n{font-family:'JetBrains Mono'; font-size:12.5px; font-weight:600; color:var(--ink-2)}
+.mcell.hol .n{color:#6E4FBF}
+.mcell .tagname{font-size:9.5px; color:#6E4FBF; font-weight:600; display:block; line-height:1.2; margin-top:1px}
+.dots{display:flex; flex-wrap:wrap; gap:3px; margin-top:6px}
+.dot{width:19px; height:19px; border-radius:7px; display:grid; place-items:center; font-size:10px; background:var(--pto-soft); position:relative}
+.dot.w{background:var(--wfh-soft)}
+.dot.t{background:transparent; border:1.5px dashed var(--pto)}
+.dot.s::after{content:"★"; position:absolute; top:-5px; right:-4px; font-size:9px; color:var(--star)}
+.bridge{
+  position:absolute; bottom:5px; left:7px; right:7px; font-size:9px; font-weight:700;
+  color:#C43A6B; letter-spacing:.03em;
+}
+
+/* năm */
+.year-scroll{overflow-x:auto; padding-bottom:8px}
+.year{min-width:760px}
+.ymonths{display:grid; grid-template-columns:repeat(12,1fr); gap:5px; margin-left:96px; margin-bottom:6px}
+.ymonths span{font-size:10px; font-weight:600; color:var(--ink-3); text-align:center; font-family:'JetBrains Mono'}
+.yrow{display:grid; grid-template-columns:96px 1fr; align-items:center; gap:0; margin-bottom:5px}
+.yname{font-size:12.5px; font-weight:500; white-space:nowrap; display:flex; align-items:center; gap:7px}
+.yname .av{width:22px; height:22px; border-radius:7px; background:var(--bg); display:grid; place-items:center; font-size:12px}
+.ymonth-wrap{display:grid; grid-template-columns:repeat(12,1fr); gap:5px}
+.ymonth{display:grid; grid-template-columns:repeat(4,1fr); gap:2px}
+.ytick{height:17px; border-radius:4px; background:#F4F2FB}
+.ytick.pto{background:var(--pto)} .ytick.wfh{background:var(--wfh)}
+.ytick.tent{background:var(--pto-soft)}
+.ytick.hol{background:var(--holiday-soft)}
+
+/* ---------- ngày cầu ---------- */
+.bridge-card{
+  background:linear-gradient(140deg,#fff 0%,#FDF6FF 100%);
+  border:1px solid var(--line); border-radius:var(--r-xl); padding:clamp(26px,4vw,44px);
+  display:grid; grid-template-columns:minmax(0,1fr); gap:36px; align-items:center; box-shadow:var(--shadow);
+}
+.bstrip{display:flex; gap:8px; flex-wrap:wrap}
+.bday{
+  flex:1 1 74px; background:var(--bg); border-radius:14px; padding:11px 8px; text-align:center;
+  border:1.5px solid transparent;
+}
+.bday .dow{font-size:10px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-3); font-weight:600}
+.bday .num{font-family:'JetBrains Mono'; font-size:19px; font-weight:600; display:block; margin:3px 0}
+.bday .lb{font-size:10px; font-weight:600; line-height:1.25}
+.bday.hol{background:var(--holiday-soft); border-color:var(--holiday)}
+.bday.hol .lb{color:#6E4FBF}
+.bday.br{background:var(--alert-soft); border-color:var(--alert); transform:translateY(-5px)}
+.bday.br .lb{color:#C43A6B}
+.bday.we{background:transparent; border:1.5px dashed var(--line)}
+.bday.we .lb{color:var(--ink-3)}
+
+/* ---------- danh sách ---------- */
+.two{display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:20px; margin-top:40px}
+.lcard{background:var(--card); border:1px solid var(--line); border-radius:var(--r-l); padding:28px}
+.lcard h3{font-size:19px; margin-bottom:16px; display:flex; align-items:center; gap:10px}
+.lcard h3 .ic{width:30px; height:30px; border-radius:10px; display:grid; place-items:center; font-size:15px}
+.lcard ul{margin:0; padding:0; list-style:none}
+.lcard li{font-size:14.2px; color:var(--ink-2); padding:9px 0 9px 26px; position:relative; border-top:1px solid var(--line); font-weight:300; line-height:1.55}
+.lcard li:first-child{border-top:0}
+.lcard li b{font-weight:600; color:var(--ink)}
+.lcard li::before{position:absolute; left:0; top:9px; font-size:13px; font-weight:700}
+.lcard.yes li::before{content:"✓"; color:var(--wfh)}
+.lcard.no li::before{content:"✕"; color:var(--ink-3)}
+
+/* ---------- lộ trình ---------- */
+.road{display:grid; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); gap:18px; margin-top:40px}
+.step{background:var(--card); border:1px solid var(--line); border-radius:var(--r-l); padding:26px; position:relative}
+.step .ph{font-family:'JetBrains Mono'; font-size:11.5px; font-weight:600; letter-spacing:.1em; color:var(--ink-3)}
+.step h3{font-size:20px; margin:9px 0 12px}
+.step p{font-size:14px; color:var(--ink-2); font-weight:300; line-height:1.6}
+.step .bar{height:5px; border-radius:99px; margin-top:18px; background:var(--line)}
+.step:nth-child(1) .bar{background:var(--wfh)}
+.step:nth-child(2) .bar{background:linear-gradient(90deg,var(--pto) 60%,var(--line) 60%)}
+.step:nth-child(3) .bar{background:linear-gradient(90deg,var(--holiday) 25%,var(--line) 25%)}
+
+/* ---------- kết ---------- */
+.end{text-align:center; padding:96px 0 110px}
+.end h2{font-size:clamp(30px,4.6vw,50px); font-weight:800; max-width:18ch; margin:0 auto}
+.end p{color:var(--ink-2); max-width:52ch; margin:20px auto 0; font-weight:300}
+.qs{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:32px}
+.q{background:var(--card); border:1px solid var(--line); border-radius:999px; padding:11px 20px; font-size:13.5px; color:var(--ink-2); font-weight:500}
+footer{border-top:1px solid var(--line); padding:26px 0 46px; font-size:12.5px; color:var(--ink-3); display:flex; flex-wrap:wrap; gap:12px; justify-content:space-between}
+
+@media(min-width:900px){
+  .hero-grid{grid-template-columns:0.92fr 1.08fr; align-items:center; gap:52px; padding:56px 0 24px}
+  .bridge-card{grid-template-columns:1fr 1.15fr}
+}
+@media(max-width:640px){
+  .band{padding:66px 0}
+  .cal .who{font-size:0; padding-right:6px}
+  .cal .who span.av{margin-right:0}
+  .demo{padding:16px; border-radius:26px}
+  .month{gap:4px} .mcell{min-height:58px; padding:5px}
+  .dot{width:15px; height:15px; font-size:8px}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none !important; transition:none !important}
+  .cell{opacity:1 !important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ HERO ============ -->
+<header class="hero">
+  <div class="blob" style="width:520px;height:520px;background:#C9B8FF;top:-220px;left:-140px"></div>
+  <div class="blob" style="width:420px;height:420px;background:#9BE8D3;top:60px;right:-180px;opacity:.4"></div>
+
+  <div class="wrap">
+    <div class="brandbar">
+      <div class="brand"><span class="mark">🐰</span> Ai Nghỉ?</div>
+      <span class="tagpill">Đề xuất nội bộ · tên gọi tạm</span>
+    </div>
+
+    <div class="hero-grid">
+      <div>
+        <h1>Thấy trước <span class="hl">ai nghỉ</span>, trước khi quá muộn.</h1>
+        <p class="lede">Mỗi người khai báo trước ngày <b>nghỉ phép</b> và <b>WFH</b> của mình. Cả team nhìn thấy nhau trên một lịch chung — và được nhắc ngay khi có quá nửa team vắng mặt cùng một ngày.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="#views">Xem thử giao diện</a>
+          <a class="btn btn-ghost" href="#problem">Vì sao cần nó?</a>
+        </div>
+      </div>
+
+      <!-- MOCKUP dải lịch -->
+      <div class="demo" id="demo">
+        <div class="demo-head">
+          <div>
+            <div class="demo-title">Team DAS · 8 người</div>
+            <div class="demo-sub">27/04 – 05/05/2026 · quanh dịp 30/4 – 1/5</div>
+          </div>
+          <span class="tagpill mono" style="font-size:11.5px">Ngưỡng 50%</span>
+        </div>
+        <div style="position:relative">
+          <table class="cal" id="calTable"></table>
+          <div class="alert-band" id="band"><span class="flag">Quá tải · 5/8</span></div>
+        </div>
+        <div class="toast" id="toast">
+          <span class="ico">🙋</span>
+          <div>
+            <p><b>Thứ Tư 29/04 đã có 5/8 người vắng mặt.</b></p>
+            <p class="sm">Huy, Trâm, Đạt, Ngọc, Bảo. Bạn vẫn đăng ký được — chỉ là nên biết trước.</p>
+          </div>
+        </div>
+        <div class="legend">
+          <span class="lg"><i class="pto"></i>Nghỉ phép</span>
+          <span class="lg"><i class="wfh"></i>WFH</span>
+          <span class="lg"><i class="tent"></i>Chưa chốt</span>
+          <span class="lg"><i class="star"></i>Đã duyệt</span>
+          <span class="lg"><i class="hol"></i>Ngày lễ</span>
+          <span class="lg"><i class="alert"></i>Quá tải</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============ VẤN ĐỀ ============ -->
+<section class="band" id="problem">
+  <div class="wrap">
+    <div class="problem">
+      <div class="eyebrow" style="color:#8F86C9">Vấn đề</div>
+      <h2 class="band-title">Kế hoạch nghỉ đang nằm rải rác trong chat và trong đầu từng người.</h2>
+      <p class="band-lede">Đến lúc đơn nghỉ lên tới HR thì đã quá muộn để ai đó đổi lịch. Ba tình huống lặp lại mỗi năm:</p>
+
+      <div class="pgrid">
+        <div class="pcard">
+          <div class="n">TÌNH HUỐNG 01</div>
+          <h3>Cận lễ, ai cũng nhắm cùng một ngày</h3>
+          <p>Lễ rơi vào thứ Năm thì thứ Tư thành ngày ai cũng muốn nghỉ để kéo dài kỳ nghỉ. Vấn đề là không ai biết người khác cũng đang nhắm ngày đó.</p>
+        </div>
+        <div class="pcard">
+          <div class="n">TÌNH HUỐNG 02</div>
+          <h3>Vé đặt từ tháng 3, team biết vào tháng 9</h3>
+          <p>Chuyến đi cá nhân thường chốt trước nhiều tháng. Nhưng nó chỉ xuất hiện trong lịch chung vào phút chót, khi không còn chỗ để thương lượng.</p>
+        </div>
+        <div class="pcard">
+          <div class="n">TÌNH HUỐNG 03</div>
+          <h3>Lead không có chỗ nào để nhìn tổng thể</h3>
+          <p>Câu hỏi “tháng sau team mình thế nào?” hiện không trả lời được trong dưới một phút, trừ khi đi hỏi từng người.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 3 CHẾ ĐỘ XEM ============ -->
+<section class="band" id="views" style="padding-top:20px">
+  <div class="wrap">
+    <div class="eyebrow">Giao diện</div>
+    <h2 class="band-title">Cùng một dữ liệu, ba khoảng cách nhìn.</h2>
+    <p class="band-lede">Tuần để điều phối công việc trước mắt. Tháng để dùng hằng ngày. Năm để nhìn ra những cụm nghỉ chồng nhau từ rất sớm.</p>
+
+    <div class="tabs" role="tablist" aria-label="Chế độ xem">
+      <button class="tab" role="tab" aria-selected="true" aria-controls="p-week" id="t-week">Tuần</button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="p-month" id="t-month">Tháng</button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="p-year" id="t-year">Năm</button>
+    </div>
+
+    <div class="panes">
+      <!-- TUẦN -->
+      <div class="pane on" id="p-week" role="tabpanel" aria-labelledby="t-week">
+        <div class="demo">
+          <div class="demo-head">
+            <div><div class="demo-title">Tuần 27/04 – 03/05/2026</div><div class="demo-sub">Chi tiết từng người, có nửa ngày và ghi chú</div></div>
+          </div>
+          <div class="week" id="weekView"></div>
+        </div>
+        <p class="pane-note">Nửa ngày tính <b>0.5</b> khi cộng vào ngưỡng. Ngôi sao vàng nghĩa là admin <b>đã duyệt</b> — người khác có thể yên tâm né ngày đó.</p>
+      </div>
+
+      <!-- THÁNG -->
+      <div class="pane" id="p-month" role="tabpanel" aria-labelledby="t-month">
+        <div class="demo">
+          <div class="demo-head">
+            <div><div class="demo-title">Tháng 04/2026</div><div class="demo-sub">Chế độ xem mặc định · di chuột lên ô để xem chi tiết</div></div>
+          </div>
+          <div class="month" id="monthView"></div>
+        </div>
+        <p class="pane-note">Mỗi ô hiện mascot của người vắng mặt. Ô hồng là ngày vượt ngưỡng 50%, ô tím là ngày lễ, và app tự đánh dấu <b>ngày cầu</b> ngay trong lưới.</p>
+      </div>
+
+      <!-- NĂM -->
+      <div class="pane" id="p-year" role="tabpanel" aria-labelledby="t-year">
+        <div class="demo">
+          <div class="demo-head">
+            <div><div class="demo-title">Cả năm 2026</div><div class="demo-sub">Mỗi người một hàng · vuốt ngang để xem</div></div>
+          </div>
+          <div class="year-scroll"><div class="year" id="yearView"></div></div>
+        </div>
+        <p class="pane-note">Đây là màn hình dành cho lead. Nhìn một lượt thấy được ai nghỉ nhiều, và <b>những cụm nghỉ nào đang chồng lên nhau</b> ở các tháng còn xa.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ NGÀY CẦU ============ -->
+<section class="band" style="padding-top:0">
+  <div class="wrap">
+    <div class="bridge-card">
+      <div>
+        <div class="eyebrow">Tính năng riêng cho bối cảnh Việt Nam</div>
+        <h2 class="band-title" style="font-size:clamp(26px,3.4vw,36px)">App tự tìm ra “ngày cầu” trước bạn.</h2>
+        <p class="band-lede" style="font-size:15.5px">Quốc khánh 2/9/2026 rơi vào thứ Tư. Nghỉ thêm thứ Năm và thứ Sáu là được năm ngày liền. Ai cũng nghĩ vậy — nên app đánh dấu sẵn hai ngày đó, kèm số người đã đăng ký.</p>
+        <p class="band-lede" style="font-size:14px; margin-top:14px">Bộ lịch lễ Việt Nam dựng sẵn: Tết Dương lịch, Tết Âm lịch, Giỗ Tổ Hùng Vương, 30/4 – 1/5, Quốc khánh. Admin nhập thêm được lịch nghỉ bù hoặc hoán đổi mà nhà nước công bố hằng năm.</p>
+      </div>
+      <div>
+        <div class="bstrip">
+          <div class="bday we"><span class="dow">T2</span><span class="num">31</span><span class="lb">Đi làm</span></div>
+          <div class="bday we"><span class="dow">T3</span><span class="num">01</span><span class="lb">Đi làm</span></div>
+          <div class="bday hol"><span class="dow">T4</span><span class="num">02</span><span class="lb">Quốc khánh</span></div>
+          <div class="bday br"><span class="dow">T5</span><span class="num">03</span><span class="lb">Ngày cầu · 4 người</span></div>
+          <div class="bday br"><span class="dow">T6</span><span class="num">04</span><span class="lb">Ngày cầu · 3 người</span></div>
+          <div class="bday we"><span class="dow">T7</span><span class="num">05</span><span class="lb">Cuối tuần</span></div>
+          <div class="bday we"><span class="dow">CN</span><span class="num">06</span><span class="lb">Cuối tuần</span></div>
+        </div>
+        <p style="font-size:12.5px; color:var(--ink-3); margin-top:16px; text-align:center">Nghỉ 2 ngày phép → được 5 ngày liền. Cả team đều tính ra điều này.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LÀM / KHÔNG LÀM ============ -->
+<section class="band" style="padding-top:0">
+  <div class="wrap">
+    <div class="eyebrow">Phạm vi</div>
+    <h2 class="band-title">Một việc, làm cho gọn.</h2>
+    <p class="band-lede">Danh sách “không làm” quan trọng ngang danh sách tính năng. Nó giữ cho app nhẹ và không giẫm chân hệ thống khác.</p>
+
+    <div class="two">
+      <div class="lcard yes">
+        <h3><span class="ic" style="background:var(--wfh-soft)">✓</span> App này làm</h3>
+        <ul>
+          <li>Đăng ký <b>nghỉ phép</b> và <b>WFH</b>, cả ngày hoặc nửa ngày, kéo chọn nhiều ngày một lần</li>
+          <li>Gắn nhãn <b>chưa chốt</b> cho kế hoạch còn có thể đổi — vẫn hiện cho cả team, vẫn tính vào ngưỡng</li>
+          <li><b>Cảnh báo</b> ngay lúc đang chọn ngày nếu vượt 50% — cảnh báo thôi, không chặn</li>
+          <li>Admin <b>duyệt</b> đăng ký, đánh dấu sao vàng để mọi người biết cái nào đã chắc</li>
+          <li>Lịch lễ Việt Nam và tự phát hiện <b>ngày cầu</b></li>
+          <li>Ba chế độ xem: tuần, tháng, năm</li>
+        </ul>
+      </div>
+      <div class="lcard no">
+        <h3><span class="ic" style="background:#EFEDF8">✕</span> App này không làm</h3>
+        <ul>
+          <li><b>Không</b> quản lý quota ngày phép còn lại — số đó thuộc về HR, lệch một ngày là mất niềm tin vào cả app</li>
+          <li><b>Không</b> thay thế quy trình xin nghỉ chính thức — nó đứng trước, ở bước lập kế hoạch</li>
+          <li><b>Không</b> chấm công, không tính giờ làm</li>
+          <li><b>Không</b> có tính năng nhóm hay rủ nhau đi chơi — mỗi người đăng ký riêng</li>
+          <li><b>Không</b> chặn ai nghỉ. Quyết định vẫn là của con người</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ LỘ TRÌNH ============ -->
+<section class="band" style="padding-top:0">
+  <div class="wrap">
+    <div class="eyebrow">Lộ trình</div>
+    <h2 class="band-title">Ra bản dùng được trước, rồi mới làm đẹp thêm.</h2>
+    <div class="road">
+      <div class="step">
+        <div class="ph">GIAI ĐOẠN 1</div>
+        <h3>Lõi</h3>
+        <p>Đăng nhập, tạo team, đăng ký nghỉ/WFH, xem theo tháng, cảnh báo quá tải, lịch lễ Việt Nam.</p>
+        <div class="bar"></div>
+      </div>
+      <div class="step">
+        <div class="ph">GIAI ĐOẠN 2</div>
+        <h3>Đầy đủ</h3>
+        <p>Xem theo tuần và theo năm, luồng duyệt và sao vàng, nhãn chưa chốt, tự phát hiện ngày cầu.</p>
+        <div class="bar"></div>
+      </div>
+      <div class="step">
+        <div class="ph">GIAI ĐOẠN 3</div>
+        <h3>Giữ thói quen</h3>
+        <p>Nhắc nhở, bản tin đầu tuần vào channel chung, xuất file cho HR, lịch lặp hằng tuần.</p>
+        <div class="bar"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ KẾT ============ -->
+<section class="end">
+  <div class="wrap">
+    <h2>App chỉ hữu ích nếu mọi người chịu nhập.</h2>
+    <p>Đó là rủi ro lớn nhất, chứ không phải phần kỹ thuật. Nên trước khi viết dòng code đầu tiên, mình muốn nghe team trả lời mấy câu này:</p>
+    <div class="qs">
+      <span class="q">Nửa ngày WFH tính 0.5 hay tính đủ 1?</span>
+      <span class="q">Sửa đăng ký đã duyệt thì có phải duyệt lại không?</span>
+      <span class="q">Ghi chú thì ai được xem?</span>
+      <span class="q">50% có phải ngưỡng hợp lý không?</span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap" style="display:flex; flex-wrap:wrap; gap:12px; justify-content:space-between; width:100%">
+    <span>Ai Nghỉ? · bản đề xuất nội bộ · 2026</span>
+    <span class="mono">Dữ liệu trong trang này là ví dụ minh hoạ</span>
+  </div>
+</footer>
+
+<script>
+/* ---------- dữ liệu mẫu ---------- */
+const PEOPLE = [
+  {em:'🐰', name:'Min'},
+  {em:'🐱', name:'Huy'},
+  {em:'🐼', name:'Trâm'},
+  {em:'🦊', name:'Đạt'},
+  {em:'🐨', name:'Ngọc'},
+  {em:'🐧', name:'Khoa'},
+  {em:'🐹', name:'Linh'},
+  {em:'🐻', name:'Bảo'}
+];
+// key: chỉ số ngày 0..8 tương ứng 27/4 → 5/5
+// t = pto|wfh, tent = chưa chốt, star = đã duyệt
+const HERO = {
+  1:{1:{t:'pto',star:1}, 2:{t:'pto',star:1}, 3:{t:'pto',star:1}},          // Huy 27,28,29
+  2:{2:{t:'wfh',tent:1}, 3:{t:'wfh',tent:1}},                               // Trâm 28,29
+  3:{3:{t:'pto',tent:1}},                                                   // Đạt 29
+  4:{2:{t:'pto',star:1}, 3:{t:'pto',star:1}},                               // Ngọc 28,29
+  5:{1:{t:'wfh'}, 2:{t:'wfh'}},                                             // Khoa 27,28
+  6:{7:{t:'pto'}},                                                          // Linh 4/5
+  7:{3:{t:'wfh'}},                                                          // Bảo 29
+  0:{7:{t:'wfh'}, 8:{t:'wfh'}}                                              // Min 4,5/5
+};
+const DAYS = [
+  {dow:'CN', d:'26', we:1}, {dow:'T2', d:'27'}, {dow:'T3', d:'28'}, {dow:'T4', d:'29'},
+  {dow:'T5', d:'30', hol:1}, {dow:'T6', d:'01', hol:1}, {dow:'T7', d:'02', we:1},
+  {dow:'CN', d:'03', we:1}, {dow:'T2', d:'04'}
+];
+// lưu ý: cột 0 là CN 26/4 để dải bắt đầu bằng cuối tuần; ánh xạ lại chỉ số
+const COLS = [
+  {dow:'T2', d:'27'}, {dow:'T3', d:'28'}, {dow:'T4', d:'29'},
+  {dow:'T5', d:'30', hol:1}, {dow:'T6', d:'01', hol:1},
+  {dow:'T7', d:'02', we:1}, {dow:'CN', d:'03', we:1},
+  {dow:'T2', d:'04'}, {dow:'T3', d:'05'}
+];
+
+/* ---------- dựng dải lịch hero ---------- */
+(function(){
+  const t = document.getElementById('calTable');
+  let html = '<thead><tr><th></th>';
+  COLS.forEach(c => {
+    html += `<th class="${c.hol?'hol':''}">${c.dow}<span class="d">${c.d}</span></th>`;
+  });
+  html += '</tr></thead><tbody>';
+  PEOPLE.forEach((p,pi) => {
+    html += `<tr><td class="who"><span class="av">${p.em}</span>${p.name}</td>`;
+    COLS.forEach((c,ci) => {
+      const e = (HERO[pi]||{})[ci+1]; // ci+1 vì HERO đánh số từ 1 = ngày 27/4
+      let cls = 'cell';
+      if(c.we) cls += ' weekend';
+      else if(e){
+        if(e.tent) cls += ' tent' + (e.t==='wfh' ? ' w' : '');
+        else cls += ' ' + e.t;
+        if(e.star) cls += ' star';
+      } else if(c.hol) cls += ' hol';
+      const lbl = e ? `${p.name} · ${e.t==='pto'?'Nghỉ phép':'WFH'}${e.tent?' (chưa chốt)':''}` : '';
+      html += `<td><span class="${cls}" style="animation-delay:${(pi*9+ci)*22}ms" title="${lbl}"></span></td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  t.innerHTML = html;
+
+  // hiệu ứng đổ dữ liệu rồi bật cảnh báo
+  const cells = t.querySelectorAll('.cell');
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!reduce){
+    cells.forEach((c,i) => {
+      c.style.opacity = 0; c.style.transform = 'scale(.6)';
+      setTimeout(() => { c.style.opacity = 1; c.style.transform = 'scale(1)'; }, 260 + i*13);
+    });
+  }
+  // đặt dải cảnh báo lên cột thứ 3 (29/4)
+  function placeBand(){
+    const head = t.querySelectorAll('thead th');
+    const target = head[3]; // cột 29/4
+    if(!target) return;
+    const band = document.getElementById('band');
+    const wrapRect = t.parentElement.getBoundingClientRect();
+    const r = target.getBoundingClientRect();
+    band.style.left = (r.left - wrapRect.left - 3) + 'px';
+    band.style.width = (r.width + 6) + 'px';
+  }
+  placeBand();
+  window.addEventListener('resize', placeBand);
+  setTimeout(() => {
+    placeBand();
+    document.getElementById('band').classList.add('show');
+    document.getElementById('toast').classList.add('show');
+  }, reduce ? 100 : 1500);
+})();
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(b => b.setAttribute('aria-selected','false'));
+    document.querySelectorAll('.pane').forEach(p => p.classList.remove('on'));
+    btn.setAttribute('aria-selected','true');
+    document.getElementById(btn.getAttribute('aria-controls')).classList.add('on');
+  });
+});
+
+/* ---------- xem theo tuần ---------- */
+(function(){
+  const week = [
+    {dow:'Thứ Hai', n:'27', items:[
+      {p:1,t:'pto',star:1},{p:5,t:'wfh'}
+    ], tally:'2/8 vắng mặt'},
+    {dow:'Thứ Ba', n:'28', items:[
+      {p:1,t:'pto',star:1},{p:2,t:'wfh',tent:1},{p:4,t:'pto',star:1},{p:5,t:'wfh',half:'chiều'}
+    ], tally:'3.5/8 · sát ngưỡng'},
+    {dow:'Thứ Tư', n:'29', over:1, items:[
+      {p:1,t:'pto',star:1},{p:2,t:'wfh',tent:1},{p:3,t:'pto',tent:1},{p:4,t:'pto',star:1},{p:7,t:'wfh'}
+    ], tally:'5/8 · vượt ngưỡng 50%'},
+    {dow:'Thứ Năm', n:'30', hol:1, items:[], tally:'Giải phóng miền Nam'},
+    {dow:'Thứ Sáu', n:'01', hol:1, items:[], tally:'Quốc tế Lao động'}
+  ];
+  document.getElementById('weekView').innerHTML = week.map(d => `
+    <div class="wday ${d.hol?'hol':''} ${d.over?'over':''}">
+      <div class="hd"><span class="dow">${d.dow}</span><span class="num">${d.n}</span></div>
+      ${d.items.map(i => {
+        const p = PEOPLE[i.p];
+        return `<div class="chip ${i.t==='wfh'?'w':''} ${i.tent?'t':''}">
+          <span class="em">${p.em}</span>${p.name}
+          ${i.star?'<span class="st">★</span>':''}
+          ${i.half?`<span class="half">${i.half}</span>`:''}
+        </div>`;
+      }).join('')}
+      <div class="tally">${d.tally}</div>
+    </div>`).join('');
+})();
+
+/* ---------- xem theo tháng ---------- */
+(function(){
+  // Tháng 4/2026: ngày 1 rơi vào thứ Tư
+  const heads = ['T2','T3','T4','T5','T6','T7','CN'];
+  const marks = {
+    9:[{p:6,t:'pto'}],
+    10:[{p:6,t:'pto'}],
+    16:[{p:2,t:'wfh'}],
+    17:[{p:0,t:'wfh'},{p:2,t:'wfh'}],
+    22:[{p:3,t:'pto',tent:1}],
+    23:[{p:3,t:'pto',tent:1},{p:5,t:'wfh'}],
+    27:[{p:1,t:'pto',star:1},{p:5,t:'wfh'}],
+    28:[{p:1,t:'pto',star:1},{p:2,t:'wfh',tent:1},{p:4,t:'pto',star:1},{p:5,t:'wfh'}],
+    29:[{p:1,t:'pto',star:1},{p:2,t:'wfh',tent:1},{p:3,t:'pto',tent:1},{p:4,t:'pto',star:1},{p:7,t:'wfh'}]
+  };
+  let h = heads.map(x => `<div class="mhead">${x}</div>`).join('');
+  // 30, 31 tháng 3 ở đầu
+  h += `<div class="mcell out"><span class="n">30</span></div><div class="mcell out"><span class="n">31</span></div>`;
+  for(let d=1; d<=30; d++){
+    const hol = (d===30);
+    const over = (d===29);
+    const bridge = (d===29);
+    const list = marks[d]||[];
+    h += `<div class="mcell ${hol?'hol':''} ${over?'over':''}">
+      <span class="n">${d}</span>
+      ${hol?'<span class="tagname">30/4</span>':''}
+      <div class="dots">${list.map(i => {
+        const p = PEOPLE[i.p];
+        return `<span class="dot ${i.t==='wfh'?'w':''} ${i.tent?'t':''} ${i.star?'s':''}" title="${p.name}">${p.em}</span>`;
+      }).join('')}</div>
+      ${bridge?'<span class="bridge">NGÀY CẦU</span>':''}
+    </div>`;
+  }
+  // 1,2,3/5 lấp cuối lưới
+  h += `<div class="mcell out hol"><span class="n">1</span></div>`;
+  h += `<div class="mcell out"><span class="n">2</span></div>`;
+  h += `<div class="mcell out"><span class="n">3</span></div>`;
+  document.getElementById('monthView').innerHTML = h;
+})();
+
+/* ---------- xem theo năm ---------- */
+(function(){
+  const M = ['1','2','3','4','5','6','7','8','9','10','11','12'];
+  // mỗi tháng 4 ô ~ 4 tuần. [tháng(0-11), tuần(0-3)] = loại
+  const YEAR = [
+    {0:{0:'hol'}, 6:{2:'wfh',3:'wfh'}, 7:{0:'pto',1:'pto'}, 10:{1:'wfh'}},                 // Min
+    {1:{2:'hol',3:'pto'}, 3:{3:'pto'}, 8:{0:'pto'}, 11:{2:'tent',3:'tent'}},                // Huy
+    {1:{2:'hol'}, 3:{3:'wfh'}, 5:{1:'wfh',2:'wfh'}, 9:{0:'pto',1:'pto'}},                   // Trâm
+    {1:{2:'hol'}, 3:{3:'tent'}, 6:{3:'pto'}, 8:{0:'tent',1:'tent'}},                        // Đạt
+    {1:{2:'hol'}, 3:{3:'pto'}, 4:{0:'pto'}, 7:{2:'wfh'}, 11:{3:'pto'}},                     // Ngọc
+    {1:{2:'hol'}, 2:{1:'wfh'}, 3:{3:'wfh'}, 7:{0:'pto',1:'pto',2:'pto'}},                   // Khoa
+    {1:{2:'hol'}, 4:{0:'pto'}, 8:{0:'pto'}, 10:{2:'tent'}},                                 // Linh
+    {1:{2:'hol'}, 3:{3:'wfh'}, 6:{1:'pto'}, 9:{3:'wfh'}, 11:{3:'tent'}}                     // Bảo
+  ];
+  let h = '<div class="ymonths">' + M.map(m => `<span>${m}</span>`).join('') + '</div>';
+  PEOPLE.forEach((p,pi) => {
+    h += `<div class="yrow"><div class="yname"><span class="av">${p.em}</span>${p.name}</div><div class="ymonth-wrap">`;
+    for(let m=0; m<12; m++){
+      h += '<div class="ymonth">';
+      for(let w=0; w<4; w++){
+        const v = (YEAR[pi][m]||{})[w];
+        h += `<span class="ytick ${v||''}"></span>`;
+      }
+      h += '</div>';
+    }
+    h += '</div></div>';
+  });
+  document.getElementById('yearView').innerHTML = h;
+})();
+</script>
+</body>
+</html>
