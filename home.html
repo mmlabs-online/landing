@@ -33,6 +33,7 @@
         <a class="menu-item" href="{{page:certtracker}}"><span class="menu-dot" style="background:#D5F3E6"></span><span><b>CertTracker</b><small>Certificate and skill tracking</small></span></a>
         <a class="menu-item" href="{{page:eri}}"><span class="menu-dot" style="background:#E6E0FF"></span><span><b>Engineering Risk Intelligence</b><small>Engineering delivery risk</small></span></a>
         <a class="menu-item" href="{{page:contractpilot}}"><span class="menu-dot" style="background:#D3F1F5"></span><span><b>ContractPilot</b><small>AI contract testing</small></span></a>
+        <a class="menu-item" href="{{page:sso}}"><span class="menu-dot" style="background:#E9E1FF"></span><span><b>SSO with Keycloak</b><small>Single sign-on R&amp;D</small></span></a>
         <a class="menu-item menu-all" href="#apps">See all apps</a>
       </div></div><a href="#how">How it works</a><a href="#pricing">Pricing</a><a href="#makers">Maker</a><a href="#news">News</a></nav>
     <div class="header-actions">
@@ -152,7 +153,7 @@
         <div class="check"><span class="tick"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"><path d="M5 12l5 5 9-10"/></svg></span>Each app stays small and focused</div>
         <div class="check"><span class="tick"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round"><path d="M5 12l5 5 9-10"/></svg></span>New apps join the same account</div>
       </div>
-      <div><a class="btn" href="#how">How sign-in works</a></div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px"><a class="btn" href="#how">How sign-in works</a><a class="btn btn-navy" href="{{page:sso}}">See the SSO R&amp;D</a></div>
     </div>
     <div class="about-art" role="img" aria-label="A golden key with dotted paths leading to four open doors, one for each mmlabs app">
       <svg viewBox="0 0 460 380" aria-hidden="true">
@@ -373,7 +374,7 @@
 <footer class="footer" data-name="Footer">
   <div class="container">
     <div class="f-col f-brand"><a class="logo-img" href="./"><img src="assets/logo-long.png" alt="mmlabs" width="190" height="101"></a><p>Small, friendly apps for everyday work life. One account opens them all.</p><div class="social">{{social}}</div></div>
-    <div class="f-col"><h4>Apps</h4><a href="{{page:calechip}}">CaleChip</a><a href="{{page:ricotdin}}">Ricotdin</a><a href="{{page:seatmgt}}">SeatMGT</a><a href="{{page:certtracker}}">CertTracker</a><a href="{{page:eri}}">Engineering Risk Intelligence</a><a href="{{page:contractpilot}}">ContractPilot</a></div>
+    <div class="f-col"><h4>Apps</h4><a href="{{page:calechip}}">CaleChip</a><a href="{{page:ricotdin}}">Ricotdin</a><a href="{{page:seatmgt}}">SeatMGT</a><a href="{{page:certtracker}}">CertTracker</a><a href="{{page:eri}}">Engineering Risk Intelligence</a><a href="{{page:contractpilot}}">ContractPilot</a><a href="{{page:sso}}">SSO with Keycloak</a></div>
     <div class="f-col"><h4>mmlabs</h4><a href="#how">How it works</a><a href="#pricing">Pricing</a><a href="#makers">Maker</a><a href="#news">News</a><a href="#contact">Contact us</a></div>
     <div class="f-col f-contact"><h4>Contact</h4><a href="mailto:{{email}}">{{email}}</a><p>mmlabs.online</p></div>
   </div>
