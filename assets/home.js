@@ -75,6 +75,114 @@
     else window.location.href = href;
   });
 
+  // Workday carousel: drag with the mouse (touch and trackpads scroll natively), dots jump to a position,
+  // arrow keys work when the track has focus. Cards half outside the focus area are dimmed; clicking one slides it in.
+  var track = document.getElementById('workday-track');
+  var wdNav = document.querySelector('.workday-nav');
+  if (track && wdNav) {
+    var cards = Array.prototype.slice.call(track.children);
+    var dotsEl = wdNav.querySelector('.workday-dots');
+    var calm = window.matchMedia('(prefers-reduced-motion: reduce)');
+    var stops = [];
+
+    function measure() {
+      // One stop per card that can sit at the start of the focus area; the last stop is the scroll end.
+      var max = track.scrollWidth - track.clientWidth;
+      var base = cards[0].offsetLeft;
+      stops = [];
+      for (var i = 0; i < cards.length; i++) {
+        var x = Math.min(cards[i].offsetLeft - base, max);
+        stops.push(x);
+        if (x >= max - 1) break;
+      }
+      dotsEl.innerHTML = '';
+      stops.forEach(function (x, i) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.setAttribute('aria-label', 'Go to position ' + (i + 1));
+        b.addEventListener('click', function () { go(i); });
+        dotsEl.appendChild(b);
+      });
+      wdNav.hidden = stops.length < 2;
+      update();
+    }
+    function nearest(x) {
+      var best = 0;
+      stops.forEach(function (s, i) { if (Math.abs(s - x) < Math.abs(stops[best] - x)) best = i; });
+      return best;
+    }
+    function go(i) {
+      i = Math.max(0, Math.min(stops.length - 1, i));
+      track.scrollTo({ left: stops[i], behavior: calm.matches ? 'auto' : 'smooth' });
+      update();
+    }
+    function update() {
+      var i = nearest(track.scrollLeft);
+      Array.prototype.forEach.call(dotsEl.children, function (d, j) {
+        d.classList.toggle('on', j === i);
+        if (j === i) d.setAttribute('aria-current', 'true'); else d.removeAttribute('aria-current');
+      });
+      // Focus area = the track minus its side padding (where the half cards peek out)
+      var pad = parseFloat(getComputedStyle(track).paddingLeft) || 0;
+      var box = track.getBoundingClientRect();
+      var from = box.left + pad - 2, to = box.right - pad + 2;
+      cards.forEach(function (c) {
+        var r = c.getBoundingClientRect();
+        var peek = r.left < from || r.right > to;
+        c.classList.toggle('is-peek', peek);
+      });
+    }
+
+    // Mouse drag. Snap is paused while dragging, then the track settles on the next stop in the drag direction.
+    var drag = null, moved = false;
+    track.addEventListener('pointerdown', function (e) {
+      if (e.pointerType !== 'mouse' || e.button !== 0 || e.target.closest('a, button')) return;
+      drag = { x: e.clientX, left: track.scrollLeft, from: nearest(track.scrollLeft) };
+      moved = false;
+    });
+    window.addEventListener('pointermove', function (e) {
+      if (!drag) return;
+      var dx = e.clientX - drag.x;
+      if (!moved && Math.abs(dx) > 5) {
+        moved = true;
+        track.classList.add('is-dragging');
+      }
+      if (moved) track.scrollLeft = drag.left - dx;
+    });
+    window.addEventListener('pointerup', function (e) {
+      if (!drag) return;
+      var d = drag;
+      drag = null;
+      if (!moved) return;
+      track.classList.remove('is-dragging');
+      setTimeout(function () { moved = false; }, 0);  // the click that follows this pointerup is swallowed first
+      var dx = e.clientX - d.x;
+      var target = Math.abs(dx) > 60 ? d.from + (dx < 0 ? 1 : -1) : nearest(track.scrollLeft);
+      go(target);
+    });
+    // A drag must not count as a click; a click on a dimmed card slides it into the focus area.
+    track.addEventListener('click', function (e) {
+      if (moved) { e.preventDefault(); e.stopPropagation(); return; }
+      var card = e.target.closest('.class-card');
+      if (card && card.classList.contains('is-peek')) {
+        e.preventDefault();
+        e.stopPropagation();
+        var r = card.getBoundingClientRect(), box = track.getBoundingClientRect();
+        go(nearest(track.scrollLeft) + (r.left + r.width / 2 > box.left + box.width / 2 ? 1 : -1));
+      }
+    }, true);
+
+    track.addEventListener('keydown', function (e) {
+      if (e.target !== track) return;
+      if (e.key === 'ArrowRight') { e.preventDefault(); go(nearest(track.scrollLeft) + 1); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); go(nearest(track.scrollLeft) - 1); }
+    });
+    track.addEventListener('scroll', update, { passive: true });
+    track.addEventListener('scrollend', update);
+    window.addEventListener('resize', measure);
+    measure();
+  }
+
   var EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   function mailto(form, subject, body) {
     var to = form.getAttribute('action').split('?')[0];

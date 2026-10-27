@@ -94,8 +94,8 @@
       "category": "Team leave and WFH planning",
       "tagline": "See who's out before it's too late.",
       "summary": "A shared calendar where everyone declares planned leave and work-from-home days early, with a warning when too much of the team is away on the same day.",
-      "status": "in-development",
-      "statusNote": "In development",
+      "status": "live",
+      "statusNote": "Live",
       "url": "https://calechip.mmlabs.online",
       "page": "pages/calechip.html",
       "problem": [
@@ -120,6 +120,28 @@
         ["Phase 2", "Complete", "Week and year views, approval flow, tentative tag, bridge-day detection."],
         ["Phase 3", "Habit", "Reminders, a weekly digest to the team channel, export for HR, recurring entries."]
       ]
+    },
+    {
+      "slug": "eri",
+      "name": "Engineering Risk Intelligence",
+      "category": "Engineering delivery risk",
+      "tagline": "See delivery risk before it becomes a surprise.",
+      "summary": "Turns Jira, pull request and CI signals into a prioritized, explainable action list for the people monitoring delivery, with rule-based, auditable risk decisions.",
+      "status": "planned",
+      "statusNote": "Phase 1 concept",
+      "url": "",
+      "page": "pages/eri.html"
+    },
+    {
+      "slug": "contractpilot",
+      "name": "ContractPilot",
+      "category": "AI contract testing",
+      "tagline": "Catch breaking API changes before staging.",
+      "summary": "Plugs into a service repository, reads how services call each other, and generates contract tests for both consumer and provider, keeping only the tests that pass when run.",
+      "status": "planned",
+      "statusNote": "Solution concept",
+      "url": "",
+      "page": "pages/contractpilot.html"
     },
     {
       "slug": "certmgt",

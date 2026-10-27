@@ -11,7 +11,7 @@ Set "detail": false for an app that has no brief yet (listed, no detail page).
 Set "page" to a standalone landing page (e.g. pages/x.html) to publish it as the app's page
 instead of the generated one; the build adds a small mmlabs bar with "All apps" and "Open app".
 """
-import json, re, shutil, subprocess, sys, threading, time
+import hashlib, json, re, shutil, subprocess, sys, threading, time
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from html import escape as e
@@ -105,8 +105,14 @@ TO_TOP = """<style>
 </script>
 """
 
+def bust(m):
+    # assets/ is cached for 30 days (see Dockerfile), so CSS/JS links get ?v=<content hash> to fetch edits right away.
+    f = ROOT / m.group(2)
+    return m.group(0) if not f.is_file() else f'{m.group(1)}{m.group(2)}?v={hashlib.md5(f.read_bytes()).hexdigest()[:8]}"'
+
 def publish(path, html):
-    # Every page goes through here so it gets the back-to-top button.
+    # Every page goes through here so it gets the back-to-top button and cache-busted CSS/JS links.
+    html = re.sub(r'((?:href|src)="(?:\.\./)*)(assets/[\w/.-]+\.(?:css|js))"', bust, html)
     path.write_text(html.replace("</body>", TO_TOP + "</body>", 1), encoding="utf-8")
 
 def fill(html, up=""):
@@ -241,6 +247,8 @@ PAGE_STRIP = """<style>
 def build_page(a):
     html = (ROOT / a["page"]).read_text(encoding="utf-8")
     strip = PAGE_STRIP.replace("{url}", e(a["url"])).replace("{name}", e(a["name"]))
+    if not a.get("url"):  # no live app yet (e.g. a concept): drop the "Open app" button
+        strip = re.sub(r'\n  <a class="mm-open"[^\n]*</a>', "", strip)
     html = re.sub(r"<body[^>]*>", lambda m: m.group(0) + "\n" + strip, html, count=1)
     html = html.replace("</head>", '<link rel="icon" type="image/png" href="../../assets/logo-short.png">\n</head>', 1)
     return html

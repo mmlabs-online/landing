@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Engineering Risk Intelligence — Solution Concept</title>
+<style>
+  :root{
+    --bg:#07111f;
+    --panel:#0d1a2c;
+    --panel2:#10213a;
+    --ink:#f3f7fb;
+    --muted:#a9b8ca;
+    --line:#203550;
+    --accent:#55c2ff;
+    --accent2:#8be0c4;
+    --warn:#f4c95d;
+    --danger:#ff7c7c;
+    --ok:#7bd88f;
+    --shadow:0 18px 50px rgba(0,0,0,.28);
+    --radius:18px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:linear-gradient(180deg,#06101d 0%,#091629 48%,#07111f 100%);color:var(--ink);font-family:Inter,Segoe UI,Arial,sans-serif;line-height:1.45}
+  a{color:inherit;text-decoration:none}
+  .shell{max-width:1180px;margin:0 auto;padding:0 28px 80px}
+  .topbar{position:sticky;top:0;z-index:20;background:rgba(7,17,31,.86);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.06)}
+  .topbar-inner{max-width:1180px;margin:0 auto;padding:14px 28px;display:flex;gap:18px;align-items:center;justify-content:space-between}
+  .brand{font-weight:750;letter-spacing:.02em;font-size:14px;text-transform:uppercase}
+  .badge{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border:1px solid var(--line);border-radius:999px;color:#cfe7f7;background:rgba(85,194,255,.08);font-size:12px}
+  .nav{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+  .nav a:hover{color:#fff}
+  .hero{padding:84px 0 48px;display:grid;grid-template-columns:1.25fr .75fr;gap:36px;align-items:center}
+  .eyebrow{font-size:13px;text-transform:uppercase;letter-spacing:.18em;color:var(--accent2);font-weight:700;margin-bottom:16px}
+  h1{font-size:58px;line-height:1.02;margin:0 0 18px;letter-spacing:-.04em;max-width:840px}
+  .hero p{font-size:20px;color:#c3cfdd;margin:0 0 28px;max-width:760px}
+  .hero-ask{display:flex;gap:12px;flex-wrap:wrap}
+  .pill{padding:11px 14px;border-radius:999px;background:#0e223a;border:1px solid #23415f;color:#d9e8f5;font-size:13px}
+  .hero-card{background:linear-gradient(180deg,rgba(16,33,58,.95),rgba(11,25,44,.95));border:1px solid #243b58;border-radius:24px;padding:24px;box-shadow:var(--shadow)}
+  .hero-card h3{margin:0 0 14px;font-size:15px;color:#d8e7f5;text-transform:uppercase;letter-spacing:.08em}
+  .metric{display:flex;align-items:flex-end;justify-content:space-between;padding:15px 0;border-top:1px solid rgba(255,255,255,.08)}
+  .metric:first-of-type{border-top:0}
+  .metric b{font-size:28px}
+  .metric span{font-size:13px;color:var(--muted);max-width:210px;text-align:right}
+  section{padding:44px 0}
+  .section-kicker{font-size:12px;color:var(--accent);text-transform:uppercase;letter-spacing:.16em;font-weight:700;margin-bottom:8px}
+  h2{font-size:36px;line-height:1.12;margin:0 0 14px;letter-spacing:-.025em}
+  .lead{font-size:18px;color:#b9c6d6;max-width:900px;margin-bottom:26px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  .card{background:rgba(13,26,44,.92);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:0 10px 28px rgba(0,0,0,.12)}
+  .card h3{margin:0 0 10px;font-size:19px}
+  .card p{margin:0;color:var(--muted)}
+  .card .num{font-size:38px;font-weight:800;letter-spacing:-.04em;margin-bottom:5px}
+  .problem .card{min-height:190px}
+  .problem .card:nth-child(1){border-top:3px solid var(--warn)}
+  .problem .card:nth-child(2){border-top:3px solid var(--danger)}
+  .problem .card:nth-child(3){border-top:3px solid var(--accent2)}
+  .flow{display:grid;grid-template-columns:1fr 56px 1fr 56px 1fr 56px 1fr;gap:0;align-items:center;margin-top:28px}
+  .flow-box{min-height:170px;background:linear-gradient(180deg,#10213a,#0c1a2d);border:1px solid #28415f;border-radius:18px;padding:20px}
+  .flow-box h3{font-size:18px;margin:0 0 10px}
+  .flow-box p{font-size:14px;color:var(--muted);margin:0}
+  .arrow{font-size:32px;text-align:center;color:#6faad2}
+  .source-stack{display:grid;gap:8px;margin-top:13px}
+  .source-chip{font-size:13px;padding:8px 10px;border-radius:10px;background:#0b1728;border:1px solid #233a56;color:#d9e6f3}
+  .principle{margin-top:22px;padding:20px 22px;border-radius:16px;background:linear-gradient(90deg,rgba(85,194,255,.11),rgba(139,224,196,.08));border:1px solid #2b536b;font-size:21px;font-weight:720;text-align:center}
+  .principle small{display:block;font-size:13px;color:var(--muted);font-weight:500;margin-top:8px}
+  .mock-wrap{display:grid;grid-template-columns:.38fr .62fr;gap:20px;align-items:start}
+  .side-note{position:sticky;top:90px}
+  .side-note .callout{padding:16px 18px;margin-bottom:12px;border-radius:14px;border:1px solid #27425f;background:#0c1c31}
+  .callout strong{display:block;margin-bottom:5px}
+  .callout span{color:var(--muted);font-size:14px}
+  .dashboard{background:#f5f7fb;color:#162336;border-radius:24px;overflow:hidden;box-shadow:var(--shadow);border:1px solid #d7dee8}
+  .dash-head{background:#fff;padding:22px 24px;border-bottom:1px solid #dde3eb;display:flex;justify-content:space-between;gap:16px;align-items:center}
+  .dash-head h3{margin:0;font-size:20px}
+  .dash-head small{color:#66768b}
+  .status{padding:6px 10px;border-radius:999px;font-size:12px;font-weight:800;letter-spacing:.04em}
+  .status-red{background:#fde8e8;color:#a83636}
+  .dash-body{padding:22px}
+  .summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+  .summary-box{background:#fff;border:1px solid #dde3eb;border-radius:14px;padding:14px}
+  .summary-box b{display:block;font-size:24px}
+  .summary-box span{font-size:12px;color:#6f7f92}
+  .risk-item{background:#fff;border:1px solid #dbe2eb;border-left:5px solid #d9534f;border-radius:14px;padding:16px;margin-top:12px}
+  .risk-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+  .risk-title{font-size:17px;font-weight:800}
+  .sev{font-size:11px;font-weight:800;padding:5px 8px;border-radius:999px;background:#fde5e5;color:#a42e2e}
+  .risk-reason{margin:8px 0 12px;color:#445269;font-size:14px}
+  .risk-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+  .risk-cell{background:#f8fafc;border:1px solid #e4e9ef;border-radius:10px;padding:9px 10px;font-size:12px}
+  .risk-cell b{display:block;color:#25344a;margin-bottom:2px}
+  .next-step{margin-top:12px;background:#edf6ff;border:1px solid #cde7fb;border-radius:10px;padding:10px 12px;font-size:13px;color:#25405c}
+  .trend{display:inline-block;margin-top:10px;padding:4px 8px;border-radius:999px;background:#fff5d9;border:1px solid #f2d68a;font-size:11px;color:#7b5b00;font-weight:700}
+  .tabs{display:flex;gap:8px;margin:0 0 18px;flex-wrap:wrap}
+  .tab{border:1px solid #2b4564;background:#0b1a2d;color:#bcd0e4;border-radius:999px;padding:9px 13px;font-size:13px;cursor:pointer}
+  .tab.active{background:#16395a;color:#fff;border-color:#3e81ac}
+  .tab-panel{display:none}
+  .tab-panel.active{display:block}
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .compare .card{min-height:290px}
+  .compare ul{padding-left:18px;color:#b9c7d7}
+  .compare li{margin:8px 0}
+  .security-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .security-item{padding:17px;background:#0d1b2e;border:1px solid #233c59;border-radius:14px}
+  .security-item b{display:block;margin-bottom:5px}
+  .security-item span{font-size:13px;color:var(--muted)}
+  .roadmap{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:22px}
+  .stage{position:relative;background:#0d1b2e;border:1px solid #243e5c;border-radius:14px;padding:16px;min-height:180px}
+  .stage .week{color:var(--accent2);font-size:12px;text-transform:uppercase;letter-spacing:.1em;font-weight:800}
+  .stage h3{font-size:16px;margin:8px 0}
+  .stage p{font-size:13px;color:var(--muted);margin:0}
+  .scope-table{width:100%;border-collapse:collapse;margin-top:18px;background:#0d1a2c;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .scope-table th,.scope-table td{padding:13px 14px;border-bottom:1px solid #1d324c;text-align:left;font-size:13px;vertical-align:top}
+  .scope-table th{color:#dbe8f4;background:#10223a}
+  .scope-table td{color:#b7c5d5}
+  .tag{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:800}
+  .p0{background:#e7f7ef;color:#16683c}
+  .p1{background:#e9f1ff;color:#24549c}
+  .p2{background:#fff5da;color:#805f00}
+  .defer{background:#f0edf4;color:#645b70}
+  .decision{margin-top:24px;background:linear-gradient(135deg,#102843,#112f3b);border:1px solid #315b75;border-radius:24px;padding:28px;display:grid;grid-template-columns:1.2fr .8fr;gap:24px;align-items:center}
+  .decision h2{margin-bottom:8px}
+  .decision p{color:#b9c7d6;margin:0}
+  .ask-box{background:#081625;border:1px solid #2f5872;border-radius:16px;padding:20px}
+  .ask-box strong{font-size:20px;display:block;margin-bottom:8px}
+  .ask-box span{font-size:14px;color:#b5c7d8}
+  footer{margin-top:60px;padding-top:22px;border-top:1px solid #1e344f;color:#7f93a8;font-size:12px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .note{font-size:12px;color:#8598aa;margin-top:9px}
+  @media(max-width:900px){
+    h1{font-size:42px}.hero{grid-template-columns:1fr}.grid3,.grid2,.compare,.security-grid,.decision{grid-template-columns:1fr}.flow{grid-template-columns:1fr;gap:10px}.arrow{transform:rotate(90deg)}.mock-wrap{grid-template-columns:1fr}.side-note{position:static}.roadmap{grid-template-columns:1fr 1fr}.summary-row{grid-template-columns:1fr 1fr}.risk-grid{grid-template-columns:1fr}.nav{display:none}
+  }
+  @media print{.topbar{display:none}body{background:white;color:black}.card,.flow-box,.security-item,.stage,.hero-card{box-shadow:none}.shell{max-width:none}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">Engineering Risk Intelligence</div>
+    <nav class="nav">
+      <a href="#problem">Problem</a><a href="#solution">Solution</a><a href="#experience">Management View</a><a href="#security">Security</a><a href="#roadmap">Roadmap</a>
+    </nav>
+    <span class="badge">Phase 1 Solution Concept</span>
+  </div>
+</header>
+<main class="shell">
+  <section class="hero">
+    <div>
+      <div class="eyebrow">From fragmented signals to prioritized action</div>
+      <h1>Engineering delivery risk should be visible before it becomes a surprise.</h1>
+      <p>Turn Jira, pull request and CI signals into a prioritized, explainable action list for the people monitoring delivery — while keeping risk decisions deterministic and auditable.</p>
+      <div class="hero-ask">
+        <span class="pill">Monitor / PM / Project Owner view</span>
+        <span class="pill">Rule-first, AI-second</span>
+        <span class="pill">Evidence-backed</span>
+        <span class="pill">Security before real data</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="problem" class="problem">
+    <div class="section-kicker">01 · The problem</div>
+    <h2>Risk exists across systems, but people must connect it manually.</h2>
+    <p class="lead">A project owner can see that a ticket is late in Jira, but still needs to inspect review status, CI results and ownership elsewhere before knowing what actually needs attention.</p>
+    <div class="grid3">
+      <div class="card"><div class="num">1</div><h3>Fragmented evidence</h3><p>Ticket state, review state and build state live in different places. The real delivery story is spread across tools.</p></div>
+      <div class="card"><div class="num">2</div><h3>Manual prioritization</h3><p>People repeatedly open tickets, PRs and CI runs to decide which issue deserves attention first.</p></div>
+      <div class="card"><div class="num">3</div><h3>Alerts without action</h3><p>Knowing that something failed is not enough. A monitor needs the cause, urgency, responsible role and next step.</p></div>
+    </div>
+  </section>
+
+  <section id="solution">
+    <div class="section-kicker">02 · Proposed solution</div>
+    <h2>A deterministic risk engine turns scattered engineering facts into an actionable monitoring view.</h2>
+    <p class="lead">The system does not ask AI to guess whether a risk exists. Rules decide the finding from source evidence. AI is optional and only explains or rewords already-validated results.</p>
+    <div class="flow">
+      <div class="flow-box">
+        <h3>Engineering sources</h3>
+        <p>Read the minimum fields needed from delivery systems.</p>
+        <div class="source-stack"><div class="source-chip">Jira · status, due date, owner, sprint</div><div class="source-chip">PR · review state, age, author</div><div class="source-chip">CI · result, failed job/step, category</div></div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="flow-box"><h3>Deterministic risk engine</h3><p>Correlate related work and apply documented rules. Same input + same snapshot time = same result.</p></div>
+      <div class="arrow">→</div>
+      <div class="flow-box"><h3>Actionable finding</h3><p>What is wrong, why it matters, severity, responsible role, next step and expected outcome.</p></div>
+      <div class="arrow">→</div>
+      <div class="flow-box"><h3>Optional AI explanation</h3><p>Translate verified facts into concise language. AI cannot create or change the underlying risk decision.</p></div>
+    </div>
+    <div class="principle">Code decides the truth. AI explains the truth.<small>Risk decisions remain reproducible, testable and traceable to source evidence.</small></div>
+  </section>
+
+  <section id="experience">
+    <div class="section-kicker">03 · What upper management / project owners would see</div>
+    <h2>Not another raw engineering log — a prioritized action view.</h2>
+    <p class="lead">The concept below shows the intended Phase 1 experience. It is a management-facing concept, not a claim that the production UI already exists.</p>
+    <div class="mock-wrap">
+      <div class="side-note">
+        <div class="callout"><strong>See the project state first</strong><span>Overall status and top risks before technical detail.</span></div>
+        <div class="callout"><strong>Understand why</strong><span>Every risk links back to Jira / PR / CI evidence.</span></div>
+        <div class="callout"><strong>Know what happens next</strong><span>Role, next action and expected outcome are part of the finding.</span></div>
+        <div class="callout"><strong>Track change over time</strong><span>NEW / RECURRING / RESOLVED gives a basic history without prediction.</span></div>
+      </div>
+      <div class="dashboard">
+        <div class="dash-head">
+          <div><h3>Project Delivery Risk Overview</h3><small>Example Phase 1 concept · current sprint</small></div>
+          <span class="status status-red">ATTENTION NEEDED</span>
+        </div>
+        <div class="dash-body">
+          <div class="summary-row">
+            <div class="summary-box"><b>3</b><span>important risks</span></div>
+            <div class="summary-box"><b>1</b><span>critical</span></div>
+            <div class="summary-box"><b>2</b><span>new this snapshot</span></div>
+            <div class="summary-box"><b>1</b><span>recurring</span></div>
+          </div>
+          <div class="risk-item">
+            <div class="risk-top"><div class="risk-title">PAY-205 · Payment update</div><span class="sev">CRITICAL</span></div>
+            <div class="risk-reason">Due soon, PR changes remain unresolved, and the current commit is failing CI.</div>
+            <div class="risk-grid">
+              <div class="risk-cell"><b>Cause</b>CI failure · TEST</div>
+              <div class="risk-cell"><b>Responsible role</b>PR author + reviewer</div>
+              <div class="risk-cell"><b>History</b>NEW</div>
+            </div>
+            <div class="next-step"><b>Next step:</b> Resolve requested changes and investigate the failing test before the next delivery check. <b>Expected outcome:</b> approved PR with passing current-sha CI.</div>
+          </div>
+          <div class="risk-item" style="border-left-color:#e4a11b">
+            <div class="risk-top"><div class="risk-title">PAY-209 · Review stalled</div><span class="sev" style="background:#fff1cc;color:#875f00">HIGH</span></div>
+            <div class="risk-reason">Requested changes have not been addressed within the configured review window.</div>
+            <div class="risk-grid"><div class="risk-cell"><b>Cause</b>Review inactivity</div><div class="risk-cell"><b>Responsible role</b>PR author</div><div class="risk-cell"><b>History</b>RECURRING</div></div>
+          </div>
+          <span class="trend">Basic history: new / recurring / resolved — not predictive AI</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-kicker">04 · What changes from Phase 0 to Phase 1</div>
+    <h2>Move from detection to actionability.</h2>
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-tab="today">Phase 0</button>
+      <button class="tab" data-tab="next">Phase 1</button>
+    </div>
+    <div id="today" class="tab-panel active">
+      <div class="compare">
+        <div class="card"><h3>What Phase 0 proved</h3><ul><li>Cross-source Jira + PR + CI correlation works.</li><li>Findings are deterministic and evidence-backed.</li><li>Jira-only can miss the stronger cross-source conclusion.</li><li>The core finding was useful to both validation participants.</li></ul></div>
+        <div class="card"><h3>What Phase 0 did not prove</h3><ul><li>Complete delivery-risk coverage.</li><li>Production integrations or live data.</li><li>A severity model.</li><li>Real LLM quality/cost.</li><li>Production security/deployment.</li></ul></div>
+      </div>
+    </div>
+    <div id="next" class="tab-panel">
+      <div class="compare">
+        <div class="card"><h3>Core Phase 1 additions</h3><ul><li>Realistic noisy data and more risk patterns.</li><li>Deterministic severity / priority.</li><li>Structured CI failure cause.</li><li>Responsible role + next step + expected outcome.</li><li>PM/monitor overview and drill-down.</li><li>NEW / RECURRING / RESOLVED history.</li></ul></div>
+        <div class="card"><h3>Intentionally not built yet</h3><ul><li>Production live integrations.</li><li>Slack / Teams / email delivery.</li><li>Production DB, auth or RBAC.</li><li>Deep CI-log root-cause analysis.</li><li>Predictive risk / ML.</li><li>AI-generated rule creation.</li></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="security">
+    <div class="section-kicker">05 · Security is an entry condition, not an afterthought</div>
+    <h2>Real data only comes after the data boundary is agreed.</h2>
+    <p class="lead">The meeting identified NDA, customer-data and deployment concerns as potential blockers. Phase 1 therefore treats security/deployment as an early design gate.</p>
+    <div class="security-grid">
+      <div class="security-item"><b>Data minimization</b><span>Collect only fields required for risk detection. Exclude unrestricted descriptions, comments and source code by default.</span></div>
+      <div class="security-item"><b>Access & storage</b><span>Define customer-hosted vs centrally hosted options, access control, encryption and retention before real integration.</span></div>
+      <div class="security-item"><b>AI boundary</b><span>Explicitly define which fields may be sent to an external model. Customer data is not used for model training without separate approval.</span></div>
+      <div class="security-item"><b>Validation first</b><span>Use synthetic or sanitized data until the security/data decision is reviewed.</span></div>
+    </div>
+  </section>
+
+  <section id="roadmap">
+    <div class="section-kicker">06 · Proposed delivery sequence</div>
+    <h2>Phase 1 is a focused validation phase, not the finished platform.</h2>
+    <p class="lead">For the focused scope below, a more realistic target is approximately <strong>4–6 weeks</strong> with 1–2 engineers using AI-assisted development. The main schedule risk is not coding speed; it is rule definition, data availability, security decisions and user validation.</p>
+    <div class="roadmap">
+      <div class="stage"><div class="week">Stage 0 · Week 1</div><h3>Confirm boundaries</h3><p>Target persona, security/data policy, available fields and the small set of Phase 1 rules.</p></div>
+      <div class="stage"><div class="week">Stage 1 · Weeks 1–2</div><h3>Realistic foundation</h3><p>Noisy multi-item data, schema update, CI failure category and prioritized findings.</p></div>
+      <div class="stage"><div class="week">Stage 2 · Weeks 3–4</div><h3>Make findings actionable</h3><p>Reason, severity, responsible role, next step, expected outcome and basic history.</p></div>
+      <div class="stage"><div class="week">Stage 3 · Weeks 5–6</div><h3>Validate and harden</h3><p>Monitor-facing view, non-builder review, fixes, security/design decisions and optional real-data mapping spike.</p></div>
+    </div>
+    <table class="scope-table">
+      <thead><tr><th>Capability</th><th>Phase 1</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td>Priority, cause, responsible role, next step</td><td><span class="tag p0">P0</span></td><td>Core value for the monitor / PM persona</td></tr>
+        <tr><td>Basic history: NEW / RECURRING / RESOLVED</td><td><span class="tag p0">P0</span></td><td>Shows whether the situation is improving or repeating</td></tr>
+        <tr><td>Static HTML monitor view / sprint aggregation</td><td><span class="tag p1">P1</span></td><td>Useful presentation layer after core logic works</td></tr>
+        <tr><td>Heatmap / trend chart</td><td><span class="tag p2">P2</span></td><td>Useful, but should not distract from actionability</td></tr>
+        <tr><td>Live integration, alerts, production UI, prediction</td><td><span class="tag defer">Later</span></td><td>Only justified after Phase 1 proves the monitor workflow</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <footer>
+    <span>Engineering Insights & Risk AI Dashboard · Upper-management solution concept</span>
+    <span>Phase 1 concept based on Phase 0 results and demo-meeting feedback · 2026-10-27</span>
+  </footer>
+</main>
+<script>
+  document.querySelectorAll('.tab').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

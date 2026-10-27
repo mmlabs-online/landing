@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ContractPilot — Solution Concept</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0f1b33;
+    --text:#45526b;
+    --muted:#7a869c;
+    --line:#e3eaf5;
+    --bg:#ffffff;
+    --soft:#f4f8ff;
+    --blue:#2563eb;
+    --blue2:#3b82f6;
+    --blue-deep:#1238a8;
+    --blue-soft:#e8f0ff;
+    --ok:#16a34a;
+    --warn:#d97706;
+    --bad:#dc2626;
+    --radius:20px;
+    --shadow:0 10px 30px rgba(30,64,140,.08);
+    --shadow-lg:0 24px 60px rgba(30,64,140,.14);
+    --mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:"Plus Jakarta Sans",Inter,"Segoe UI",Arial,sans-serif;line-height:1.55;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  h1,h2,h3{color:var(--ink);margin:0}
+  code{font-family:var(--mono);font-size:.88em;background:var(--blue-soft);border:1px solid #d3e1fb;border-radius:6px;padding:1px 6px;color:#1d3f8f}
+  .wrap{max-width:1160px;margin:0 auto;padding:0 24px}
+  .hl{background:linear-gradient(90deg,var(--blue) 0%,var(--blue2) 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+  /* Hero: soft sky with clouds */
+  .hero{position:relative;margin:16px;border-radius:32px;overflow:hidden;
+    background:
+      radial-gradient(ellipse 40% 26% at 18% 78%,rgba(255,255,255,.9),transparent 70%),
+      radial-gradient(ellipse 34% 22% at 82% 70%,rgba(255,255,255,.85),transparent 70%),
+      radial-gradient(ellipse 30% 18% at 60% 20%,rgba(255,255,255,.55),transparent 70%),
+      radial-gradient(ellipse 26% 16% at 12% 22%,rgba(255,255,255,.5),transparent 70%),
+      linear-gradient(180deg,#9cc3fb 0%,#c3dafd 45%,#e6f0ff 80%,#f5f9ff 100%)}
+  .topnav{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 28px}
+  .logo{display:flex;align-items:center;gap:8px;font-weight:800;color:var(--blue-deep);font-size:18px;letter-spacing:-.01em}
+  .logo svg{flex:none}
+  .pillnav{display:flex;gap:4px;padding:5px;background:rgba(255,255,255,.85);border:1px solid rgba(255,255,255,.9);border-radius:999px;box-shadow:0 4px 16px rgba(30,64,140,.08);backdrop-filter:blur(8px)}
+  .pillnav a{font-size:13px;font-weight:500;color:var(--ink);padding:7px 14px;border-radius:999px}
+  .pillnav a:hover{background:var(--blue-soft);color:var(--blue)}
+  .nav-actions{display:flex;gap:8px}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;font-weight:600;font-size:14px;padding:11px 20px;border-radius:999px;border:1px solid transparent;cursor:pointer;font-family:inherit;transition:transform .15s ease,box-shadow .15s ease}
+  .btn:hover{transform:translateY(-1px)}
+  .btn-sm{font-size:13px;padding:8px 16px}
+  .btn-blue{background:linear-gradient(180deg,#3b82f6,#2563eb);color:#fff;box-shadow:0 6px 16px rgba(37,99,235,.3)}
+  .btn-white{background:#fff;color:var(--ink);border-color:#e1e9f6}
+  .hero-body{text-align:center;padding:64px 24px 88px;max-width:880px;margin:0 auto}
+  .chip{display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:999px;background:#fff;border:1px solid #d9e5fa;color:var(--blue);font-size:12px;font-weight:600;box-shadow:0 2px 8px rgba(30,64,140,.06)}
+  .chip i{width:7px;height:7px;border-radius:50%;background:var(--blue2);display:inline-block;box-shadow:0 0 0 3px #dbe7ff}
+  .hero h1{font-size:54px;line-height:1.08;letter-spacing:-.035em;font-weight:700;margin:20px 0 18px}
+  .hero p{font-size:18px;color:#3d4b66;margin:0 auto 30px;max-width:680px}
+  .hero-cta{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+  .tags{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:28px}
+  .tags span{font-size:12px;font-weight:500;color:#2c3c5c;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.95)}
+
+  /* Sections */
+  section{padding:80px 0}
+  .head{text-align:center;max-width:760px;margin:0 auto 44px}
+  .head h2{font-size:38px;line-height:1.15;letter-spacing:-.03em;font-weight:700;margin:16px 0 12px}
+  .head p{margin:0;font-size:16px;color:var(--text)}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+  .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  .card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow)}
+  .card h3{font-size:17px;font-weight:700;margin:16px 0 8px}
+  .card p{margin:0;font-size:14px}
+  .ico{width:44px;height:44px;border-radius:12px;background:var(--blue-soft);color:var(--blue);display:flex;align-items:center;justify-content:center}
+  .ico svg{width:22px;height:22px}
+
+  /* Numbers band */
+  .band{background:linear-gradient(90deg,#1d4ed8 0%,#2563eb 50%,#3b82f6 100%);border-radius:22px;padding:26px 30px;display:grid;grid-template-columns:repeat(4,1fr);gap:10px;box-shadow:var(--shadow-lg);color:#fff}
+  .band div{padding:4px 12px;border-left:1px solid rgba(255,255,255,.22)}
+  .band div:first-child{border-left:0}
+  .band b{display:block;font-size:24px;font-weight:700;letter-spacing:-.02em}
+  .band span{font-size:13px;color:#dbe7ff}
+
+  /* Flow steps */
+  .soft{background:linear-gradient(180deg,#fff 0%,var(--soft) 50%,#fff 100%)}
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;position:relative}
+  .step{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);position:relative}
+  .step .n{width:34px;height:34px;border-radius:50%;background:linear-gradient(180deg,#3b82f6,#2563eb);color:#fff;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 5px var(--blue-soft)}
+  .step h3{font-size:17px;margin:18px 0 8px}
+  .step p{font-size:14px;margin:0}
+  .step .src{display:grid;gap:6px;margin-top:14px}
+  .step .src span{font-size:12px;padding:6px 10px;border-radius:10px;background:var(--soft);border:1px solid var(--line);color:#33415c}
+  .principle{margin-top:28px;text-align:center;padding:22px;border-radius:18px;background:#fff;border:1px dashed #b9cff5}
+  .principle strong{display:block;font-size:20px;color:var(--ink);font-weight:700;letter-spacing:-.01em}
+  .principle small{color:var(--muted);font-size:13px}
+
+  /* Two sides */
+  .sides{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .side{border-radius:24px;padding:30px;border:1px solid var(--line);background:#fff;box-shadow:var(--shadow)}
+  .side.consumer{background:linear-gradient(180deg,#eef4ff,#fff 60%)}
+  .side.provider{background:linear-gradient(180deg,#f1f0ff,#fff 60%)}
+  .side .who{display:inline-block;font-size:11px;text-transform:uppercase;letter-spacing:.12em;font-weight:700;color:var(--blue);background:#fff;border:1px solid #d9e5fa;border-radius:999px;padding:5px 10px}
+  .side.provider .who{color:#5b45e0;border-color:#e0dafc}
+  .side h3{font-size:21px;margin:16px 0 14px;letter-spacing:-.01em}
+  .checks{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+  .checks li{position:relative;padding-left:30px;font-size:14px}
+  .checks li::before{content:"";position:absolute;left:0;top:1px;width:20px;height:20px;border-radius:50%;background:var(--blue) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12l4 4 8-8'/%3E%3C/svg%3E") center/12px no-repeat}
+  .side.provider .checks li::before{background-color:#6d5ae6}
+
+  /* Developer view */
+  .dev{display:grid;grid-template-columns:.4fr .6fr;gap:24px;align-items:start}
+  .notes{display:grid;gap:12px;position:sticky;top:24px}
+  .note{display:flex;gap:14px;align-items:flex-start;background:#fff;border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow)}
+  .note .ico{width:38px;height:38px;border-radius:10px;flex:none}
+  .note .ico svg{width:18px;height:18px}
+  .note strong{display:block;color:var(--ink);font-size:14px;margin-bottom:2px}
+  .note span{font-size:13px;color:var(--text)}
+  .stage-bg{border-radius:28px;padding:22px;background:linear-gradient(160deg,#cfe1ff 0%,#e9f1ff 55%,#f6f9ff 100%);border:1px solid #dbe7fb}
+  .term{background:#0e1a33;border-radius:18px;overflow:hidden;box-shadow:var(--shadow-lg)}
+  .term-head{display:flex;align-items:center;gap:7px;padding:12px 16px;background:#13234a;font-size:12px;color:#8ea3c9}
+  .term-head i{width:10px;height:10px;border-radius:50%;background:#2f4677;display:inline-block}
+  .term-head span{margin-left:8px}
+  .term pre{margin:0;padding:18px 20px;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:#d4def2;white-space:pre-wrap;word-break:break-word}
+  .t-dim{color:#7086ad}.t-ok{color:#5ee08b}.t-warn{color:#fbbf4b}.t-bad{color:#ff8a8a}.t-acc{color:#7fb2ff}.t-or{color:#a99cff}
+  .drift{background:#fff;border-radius:18px;overflow:hidden;box-shadow:var(--shadow-lg);margin-top:16px;border:1px solid var(--line)}
+  .drift-head{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px;align-items:center}
+  .drift-head h3{font-size:16px}
+  .drift-head small{color:var(--muted);font-size:12px}
+  .status{padding:6px 11px;border-radius:999px;font-size:11px;font-weight:700;letter-spacing:.04em;background:#fee2e2;color:#b91c1c;white-space:nowrap}
+  .drift-body{padding:16px 20px;display:grid;gap:10px}
+  .drift-item{border:1px solid var(--line);border-left:4px solid var(--bad);border-radius:12px;padding:14px}
+  .drift-item.amber{border-left-color:#f59e0b}
+  .drift-item b{display:block;color:var(--ink);font-size:14px;margin-bottom:4px}
+  .drift-item p{margin:0 0 8px;font-size:13px}
+  .drift-item .ev{font-family:var(--mono);font-size:11.5px;color:#4b5b78;background:var(--soft);border-radius:8px;padding:6px 8px;word-break:break-word}
+
+  /* Plug in tabs */
+  .tabs{display:inline-flex;gap:4px;padding:5px;background:var(--soft);border:1px solid var(--line);border-radius:999px;margin:0 auto 26px}
+  .tabs-row{text-align:center}
+  .tab{border:0;background:transparent;color:var(--text);border-radius:999px;padding:9px 18px;font:inherit;font-size:13px;font-weight:600;cursor:pointer}
+  .tab.active{background:#fff;color:var(--blue);box-shadow:0 2px 10px rgba(30,64,140,.12)}
+  .tab-panel{display:none}
+  .tab-panel.active{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+  .tab-panel ul{margin:12px 0 0;padding-left:18px;font-size:14px}
+  .tab-panel li{margin:7px 0}
+  .tab-panel .card h3{margin-top:0}
+
+  /* Roadmap */
+  .road{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
+  .road .step .when{font-size:12px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.08em;margin-top:16px}
+  .road .step h3{margin-top:6px}
+  .table-wrap{overflow-x:auto;margin-top:28px;border-radius:18px;border:1px solid var(--line);box-shadow:var(--shadow);background:#fff}
+  .scope{width:100%;min-width:560px;border-collapse:collapse}
+  .scope th,.scope td{padding:14px 18px;border-bottom:1px solid var(--line);text-align:left;font-size:14px;vertical-align:top}
+  .scope tr:last-child td{border-bottom:0}
+  .scope th{color:var(--ink);background:var(--soft);font-weight:700;font-size:13px}
+  .tag{display:inline-block;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:700}
+  .p0{background:#dcfce7;color:#166534}
+  .p1{background:#dbeafe;color:#1e40af}
+  .p2{background:#fef3c7;color:#92400e}
+  .defer{background:#f1f0f6;color:#5d5873}
+
+  /* CTA */
+  .cta{position:relative;overflow:hidden;border-radius:28px;padding:48px;background:linear-gradient(120deg,#0f2f8f 0%,#1d4ed8 55%,#3b82f6 100%);color:#fff;display:grid;grid-template-columns:1.3fr .7fr;gap:28px;align-items:center;box-shadow:var(--shadow-lg)}
+  .cta::after{content:"";position:absolute;right:-80px;top:-80px;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.18),transparent 70%)}
+  .cta h2{color:#fff;font-size:34px;letter-spacing:-.03em;line-height:1.15;margin-bottom:12px}
+  .cta p{margin:0;color:#d6e3ff;font-size:16px}
+  .cta-box{position:relative;z-index:1;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.25);border-radius:18px;padding:22px}
+  .cta-box strong{display:block;font-size:30px;font-weight:800;letter-spacing:-.02em}
+  .cta-box span{font-size:13px;color:#d6e3ff}
+
+  footer{border-top:1px solid var(--line);margin-top:40px;padding:26px 0 40px;font-size:13px;color:var(--muted)}
+  footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+
+  @media(max-width:960px){
+    .pillnav{display:none}
+    .hero h1{font-size:42px}
+    .grid3,.sides,.dev,.cta{grid-template-columns:1fr}
+    .grid4,.steps,.road,.band{grid-template-columns:1fr 1fr}
+    .band div:nth-child(3){border-left:0}
+    .notes{position:static}
+    .tab-panel.active{grid-template-columns:1fr}
+  }
+  @media(max-width:560px){
+    .hero{margin:8px;border-radius:24px}
+    .topnav{padding:16px}
+    .nav-actions .btn-white{display:none}
+    .hero-body{padding:40px 16px 64px}
+    .hero h1{font-size:34px}
+    .hero p{font-size:16px}
+    .wrap{padding:0 16px}
+    section{padding:56px 0}
+    .head h2{font-size:28px}
+    .grid4,.steps,.road,.band{grid-template-columns:1fr}
+    .band div{border-left:0;border-top:1px solid rgba(255,255,255,.22);padding:10px 4px}
+    .band div:first-child{border-top:0}
+    .cta{padding:28px}
+    .cta h2{font-size:26px}
+    .tabs{display:flex;flex-wrap:wrap;border-radius:18px;justify-content:center}
+  }
+</style>
+</head>
+<body>
+<header class="hero">
+  <div class="topnav">
+    <a class="logo" href="#top"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="13" height="17" rx="2.5" fill="#dbe7ff"/><path d="M8 8h5M8 11.5h3"/><circle cx="17" cy="17" r="4" fill="#2563eb" stroke="#2563eb"/><path d="M15.3 17l1.2 1.2 2.1-2.2" stroke="#fff"/></svg>ContractPilot</a>
+    <nav class="pillnav">
+      <a href="#problem">Problem</a><a href="#solution">Solution</a><a href="#experience">Developer view</a><a href="#plug">Plug in</a><a href="#roadmap">Roadmap</a>
+    </nav>
+    <div class="nav-actions"><a class="btn btn-white btn-sm" href="#guardrails">Guardrails</a><a class="btn btn-blue btn-sm" href="#roadmap">See the plan</a></div>
+  </div>
+  <div class="hero-body" id="top">
+    <span class="chip"><i></i>AI contract testing · Solution concept</span>
+    <h1>Catch breaking API changes <span class="hl">before they reach staging</span></h1>
+    <p>Plug ContractPilot into a consumer or provider repository. It reads how services actually call each other, writes contract tests for both sides, runs them, and only proposes tests that pass for the right reason.</p>
+    <div class="hero-cta"><a class="btn btn-blue" href="#solution">How it works</a><a class="btn btn-white" href="#experience">See an example</a></div>
+    <div class="tags"><span>Consumer-driven contracts</span><span>Provider verification</span><span>Evidence back to file:line</span><span>Pact-compatible output</span></div>
+  </div>
+</header>
+
+<main>
+  <section id="problem">
+    <div class="wrap">
+      <div class="head">
+        <span class="chip"><i></i>The problem</span>
+        <h2>Contract testing works. <span class="hl">Writing the contracts</span> is where teams give up.</h2>
+        <p>Tools like Pact and Spring Cloud Contract run contract tests well. The hard part comes before that: finding every call between services, writing expectations by hand, and setting up provider state so verification can run at all.</p>
+      </div>
+      <div class="grid3">
+        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg></div><h3>Slow to start</h3><p>A team with dozens of service-to-service calls needs days of manual work before the first contract runs in CI.</p></div>
+        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg></div><h3>Provider state is painful</h3><p>"Given order 42 exists" means seeding data in the provider. This setup is the part people skip, so verifications never run.</p></div>
+        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0zM12 9v4M12 17h.01"/></svg></div><h3>Contracts go stale</h3><p>Code changes, contracts do not. Broken integrations show up in staging or with a customer instead of in the pull request.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="band">
+      <div><b>Days → minutes</b><span>From no contracts to a first runnable suite</span></div>
+      <div><b>Only used fields</b><span>Assert what the consumer reads, not the whole response</span></div>
+      <div><b>Every PR</b><span>Drift between both sides shows up before merge</span></div>
+      <div><b>4–6 weeks</b><span>To a first version on one stack</span></div>
+    </div>
+  </div>
+
+  <section id="solution" class="soft">
+    <div class="wrap">
+      <div class="head">
+        <span class="chip"><i></i>Proposed solution</span>
+        <h2>Code finds the calls. AI writes the tests. <span class="hl">The test run decides.</span></h2>
+        <p>ContractPilot does not ask a model to invent an API. Every interaction comes from code it can point to. AI fills in what code analysis cannot: field meaning, provider state and edge cases.</p>
+      </div>
+      <div class="steps">
+        <div class="step"><div class="n">1</div><h3>Scan the code</h3><p>Parse both repositories to find where services talk to each other.</p><div class="src"><span>Consumer · HTTP clients, Feign, axios</span><span>Provider · controllers, routes, DTOs</span><span>Optional · OpenAPI spec</span></div></div>
+        <div class="step"><div class="n">2</div><h3>Interaction map</h3><p>One language-neutral model of every request, response and the fields the consumer actually reads. Each entry links to file and line.</p></div>
+        <div class="step"><div class="n">3</div><h3>Generate tests</h3><p>Consumer tests and contract files on one side. Provider verification and state setup on the other.</p></div>
+        <div class="step"><div class="n">4</div><h3>Run and repair</h3><p>Run the tests for real. On failure, feed the error back and retry a few times. Still failing? Report it, don't hide it.</p></div>
+      </div>
+      <div class="principle"><strong>No expectation without a source reference. No proposed test without a run.</strong><small>The run-and-repair loop is what stops tests that pass for the wrong reason.</small></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="head">
+        <span class="chip"><i></i>Both sides of the contract</span>
+        <h2>One tool, <span class="hl">two jobs</span></h2>
+      </div>
+      <div class="sides">
+        <div class="side consumer">
+          <span class="who">Consumer side</span>
+          <h3>"This is what I call, and what I need back."</h3>
+          <ul class="checks">
+            <li>Finds each outgoing call and the request it sends.</li>
+            <li>Follows the response through the code to see which fields are really used.</li>
+            <li>Writes a contract with flexible matchers (type, format, regex) instead of fixed example values.</li>
+            <li>Generates the consumer test that produces the contract file.</li>
+          </ul>
+        </div>
+        <div class="side provider">
+          <span class="who">Provider side</span>
+          <h3>"Prove I still give every consumer what it needs."</h3>
+          <ul class="checks">
+            <li>Generates the verification test that replays each consumer contract.</li>
+            <li>Reads the data layer to write provider state setup ("given order 42 exists").</li>
+            <li>Flags fields the provider no longer returns, or returns with a different type.</li>
+            <li>Shows which consumers would break before an endpoint changes.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="experience" class="soft">
+    <div class="wrap">
+      <div class="head">
+        <span class="chip"><i></i>Developer view</span>
+        <h2>A proposal in the pull request, <span class="hl">not a pile of files</span></h2>
+        <p>The views below show the intended experience. They are a concept, not a claim that the tool already exists.</p>
+      </div>
+      <div class="dev">
+        <div class="notes">
+          <div class="note"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.5.5l3-3a5 5 0 00-7-7l-1.7 1.7M14 11a5 5 0 00-7.5-.5l-3 3a5 5 0 007 7l1.7-1.7"/></svg></div><div><strong>Every assertion is traceable</strong><span>Each expected field links to the line of consumer code that reads it.</span></div></div>
+          <div class="note"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0116 0"/></svg></div><div><strong>Nothing is committed silently</strong><span>Tests are proposed for review. A developer accepts, edits or rejects them.</span></div></div>
+          <div class="note"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4M12 16h.01"/></svg></div><div><strong>Failures stay visible</strong><span>If a test cannot be made to pass, it is listed as unresolved with the reason.</span></div></div>
+          <div class="note"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3v12M18 9v12M6 15a3 3 0 100 6 3 3 0 000-6zM18 3a3 3 0 100 6 3 3 0 000-6zM18 9c0 4-12 2-12 6"/></svg></div><div><strong>Drift before merge</strong><span>Mismatches between consumer and provider are found from code, before any test runs.</span></div></div>
+        </div>
+        <div class="stage-bg">
+          <div class="term">
+            <div class="term-head"><i></i><i></i><i></i><span>order-web · contractpilot generate</span></div>
+<pre><span class="t-dim">$</span> contractpilot scan <span class="t-dim">--consumer</span> order-web <span class="t-dim">--provider</span> order-service
+<span class="t-acc">✓</span> Found 14 interactions across 3 providers
+<span class="t-dim">  order-web → order-service      9
+  order-web → payment-service    4
+  order-web → user-service       1</span>
+
+<span class="t-dim">$</span> contractpilot generate
+<span class="t-acc">→</span> GET /orders/{id}
+<span class="t-dim">  uses: id, status, total.amount, items[].sku
+  from: src/orders/OrderSummary.tsx:42, :57, :61</span>
+  <span class="t-ok">✓ consumer test passed</span>   <span class="t-ok">✓ provider verification passed</span>
+<span class="t-acc">→</span> POST /orders/{id}/cancel
+  <span class="t-warn">↺ provider state "order 42 is PAID" missing, generated, retry 1</span>
+  <span class="t-ok">✓ consumer test passed</span>   <span class="t-ok">✓ provider verification passed</span>
+<span class="t-acc">→</span> GET /payments/{orderId}
+  <span class="t-bad">✗ unresolved after 3 attempts: provider needs an external sandbox</span>
+
+<span class="t-or">Summary</span>  13 proposed · 1 unresolved · 0 committed (awaiting review)</pre>
+          </div>
+          <div class="drift">
+            <div class="drift-head">
+              <div><h3>Contract drift · PR #318 in order-service</h3><small>Example concept · found from code, before tests run</small></div>
+              <span class="status">1 BREAKING</span>
+            </div>
+            <div class="drift-body">
+              <div class="drift-item">
+                <b>Field renamed: <code>customer.fullName</code> → <code>customer.name</code></b>
+                <p>order-web still reads <code>customer.fullName</code>. Merging this PR will show an empty name on the order page.</p>
+                <div class="ev">consumer: order-web/src/orders/OrderHeader.tsx:18 · provider: OrderDto.java:31</div>
+              </div>
+              <div class="drift-item amber">
+                <b>Type changed: <code>total.amount</code> string → number</b>
+                <p>Compatible for order-web (it formats the value), but mobile-app parses it as a string.</p>
+                <div class="ev">consumer: mobile-app/lib/order.dart:77</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="plug">
+    <div class="wrap">
+      <div class="head">
+        <span class="chip"><i></i>Plug in</span>
+        <h2>Start from the command line. <span class="hl">Grow into the pull request.</span></h2>
+      </div>
+      <div class="tabs-row"><div class="tabs" role="tablist">
+        <button class="tab active" data-tab="cli" role="tab">CLI</button>
+        <button class="tab" data-tab="agent" role="tab">AI agent (MCP)</button>
+        <button class="tab" data-tab="ci" role="tab">CI and PR bot</button>
+      </div></div>
+      <div id="cli" class="tab-panel active">
+        <div class="card"><h3>The core</h3><ul><li><code>contractpilot init</code> detects the stack and test framework.</li><li><code>scan</code> builds the interaction map.</li><li><code>generate</code> writes and runs tests.</li><li><code>verify</code> runs everything in CI.</li></ul></div>
+        <div class="card"><h3>Why start here</h3><ul><li>Works on any machine and any CI.</li><li>Output is plain test files the team owns.</li><li>No hosted service needed for the first version.</li></ul></div>
+      </div>
+      <div id="agent" class="tab-panel">
+        <div class="card"><h3>Inside the coding assistant</h3><ul><li>Exposed as an MCP server, so an AI coding agent can call scan, generate and verify as tools.</li><li>"Add contract tests for the payment client" becomes one request.</li></ul></div>
+        <div class="card"><h3>Why it helps</h3><ul><li>The agent gets the interaction map with source references, not raw guesses.</li><li>The same run-and-repair loop applies, so results match the CLI.</li></ul></div>
+      </div>
+      <div id="ci" class="tab-panel">
+        <div class="card"><h3>On every pull request</h3><ul><li>Diff the change, find affected contracts, and comment with the drift report.</li><li>Suggest contract updates when a change is intentional.</li><li>Publish contracts to a broker so each side verifies the other.</li></ul></div>
+        <div class="card"><h3>Comes later</h3><ul><li>Needs hosting and repository permissions.</li><li>Only worth it once the team trusts the CLI output.</li></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="guardrails" class="soft">
+    <div class="wrap">
+      <div class="head">
+        <span class="chip"><i></i>Guardrails</span>
+        <h2>Generated tests only help if <span class="hl">people trust them</span></h2>
+      </div>
+      <div class="grid4">
+        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 001 1h4"/><path d="M17 21H7a2 2 0 01-2-2V5a2 2 0 012-2h7l5 5v11a2 2 0 01-2 2zM9 13l2 2 4-4"/></svg></div><h3>No invented fields</h3><p>Every expected field and status code must link to source code. Anything without a reference is dropped.</p></div>
+        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div><h3>Human review</h3><p>Tests are proposed, never committed automatically. The team owns the output as normal test code.</p></div>
+        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></div><h3>Minimal code sent to AI</h3><p>Only the relevant snippets go to the model, with a self-hosted model option for projects under NDA.</p></div>
+        <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg></div><h3>Standard formats</h3><p>Output uses existing formats such as Pact, so there is no lock-in and existing brokers keep working.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="roadmap">
+    <div class="wrap">
+      <div class="head">
+        <span class="chip"><i></i>Delivery plan</span>
+        <h2>Start with <span class="hl">one stack and REST only</span></h2>
+        <p>About 4–6 weeks with 1–2 engineers using AI-assisted development. The main risk is not code generation. It is accuracy: how often generated tests pass without hand edits.</p>
+      </div>
+      <div class="road">
+        <div class="step"><div class="n">0</div><div class="when">Week 1</div><h3>Pick the target</h3><p>One stack (for example Spring Boot + Feign, or NestJS + axios), two sample services and the output format.</p></div>
+        <div class="step"><div class="n">1</div><div class="when">Weeks 1–2</div><h3>Consumer side</h3><p>Scanner, interaction map with source references, contract and consumer test generation.</p></div>
+        <div class="step"><div class="n">2</div><div class="when">Weeks 3–4</div><h3>Provider side</h3><p>Verification tests, provider state setup, and the run-and-repair loop.</p></div>
+        <div class="step"><div class="n">3</div><div class="when">Weeks 5–6</div><h3>Drift and trial</h3><p>Consumer–provider drift report, then a trial on a real project measuring the pass-without-edit rate.</p></div>
+      </div>
+      <div class="table-wrap">
+        <table class="scope">
+          <thead><tr><th>Capability</th><th>First version</th><th>Reason</th></tr></thead>
+          <tbody>
+            <tr><td>Consumer contracts with source references</td><td><span class="tag p0">P0</span></td><td>The core value and the base for everything else</td></tr>
+            <tr><td>Provider verification and state setup</td><td><span class="tag p0">P0</span></td><td>The most painful manual step today</td></tr>
+            <tr><td>Run-and-repair loop</td><td><span class="tag p0">P0</span></td><td>Without it, generated tests cannot be trusted</td></tr>
+            <tr><td>Drift report between consumer and provider</td><td><span class="tag p1">P1</span></td><td>High value, builds on the interaction map</td></tr>
+            <tr><td>MCP server for AI coding agents</td><td><span class="tag p1">P1</span></td><td>Thin layer over the CLI</td></tr>
+            <tr><td>Message contracts (Kafka, RabbitMQ)</td><td><span class="tag p2">P2</span></td><td>Few tools cover it well, but REST comes first</td></tr>
+            <tr><td>PR bot, more languages, contracts from live traffic</td><td><span class="tag defer">Later</span></td><td>Only after the first stack proves accurate</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="cta">
+      <div>
+        <h2>Trust every deploy between your services</h2>
+        <p>ContractPilot is at the concept stage. The first version targets one stack, REST only, and is measured by one number: how many generated tests pass without a human editing them.</p>
+      </div>
+      <div class="cta-box"><strong>4–6 weeks</strong><span>to a first version with 1–2 engineers, then a trial on a real project</span></div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>ContractPilot · AI-generated contract testing · Solution concept</span>
+    <span>Concept page · 2026-10-27</span>
+  </div>
+</footer>
+<script>
+  document.querySelectorAll('.tab').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.tab).classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

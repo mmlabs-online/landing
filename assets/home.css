@@ -62,7 +62,7 @@ section{position:relative}
 
 /* Services */
 .services{padding:110px 0 100px}
-.services .row{display:grid;grid-template-columns:repeat(4,1fr);gap:30px}
+.services .row{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
 .service{border-radius:36px;padding:28px 24px;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center}
 .service-icon{width:120px;height:120px;border-radius:60px;background:var(--white);display:flex;align-items:center;justify-content:center;border:3px solid var(--primary-dark)}
 .service h3{font-size:22px}
@@ -93,7 +93,27 @@ section{position:relative}
 
 /* Classes */
 .classes{padding:110px 0}
-.classes .row{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;align-items:start}
+/* Workday cards: a horizontal carousel. 3 cards in view on desktop, 2 on tablet, 1 (with the next one peeking) on phones. */
+/* Workday cards: a full-width drag carousel. The middle is the focus area with --vis whole cards;
+   about half a card peeks out on each side when there are more apps that way. Sizes use the section's width (cqw). */
+.classes{container-type:inline-size}
+.classes .row{--gap:30px;--vis:3;--w:min(400px,calc(100cqw / (var(--vis) + 1) - var(--gap)));--pad:calc((100cqw - var(--vis) * var(--w) - (var(--vis) - 1) * var(--gap)) / 2);
+  display:flex;gap:var(--gap);align-items:flex-start;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scroll-behavior:smooth;scrollbar-width:none;
+  width:100cqw;margin:-14px calc(50% - 50cqw) -26px;padding:14px var(--pad) 26px;scroll-padding-inline:var(--pad);cursor:grab;-webkit-user-select:none;user-select:none}
+.classes .row::-webkit-scrollbar{display:none}
+.classes .row:focus-visible{outline:4px solid var(--sky-strong);outline-offset:-4px}
+.classes .row.is-dragging{cursor:grabbing;scroll-snap-type:none;scroll-behavior:auto}
+.classes .row img{-webkit-user-drag:none;pointer-events:none}
+.classes .class-card{flex:0 0 var(--w);scroll-snap-align:start;transition:transform .2s ease,box-shadow .2s ease,opacity .35s ease,filter .35s ease}
+.classes .class-card.is-peek{opacity:.5;filter:saturate(.6);cursor:pointer}
+.classes .row.is-dragging .class-card{transform:none}
+.workday-nav{display:flex;align-items:center;justify-content:center;margin-top:36px}
+.workday-nav[hidden]{display:none}
+.workday-nav .dots{margin-top:0}
+.workday-dots button{width:12px;height:12px;padding:0;border:0;border-radius:6px;background:var(--primary-light);cursor:pointer;transition:width .3s ease,background-color .3s ease}
+.workday-dots button.on{width:36px;background:var(--gold)}
+.workday-dots button:focus-visible{outline:3px solid var(--sky-strong);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.classes .row{scroll-behavior:auto}.classes .class-card{transition:none}}
 .class-card{border-radius:36px;background:var(--white);border:3px solid var(--primary-dark);overflow:hidden;box-shadow:0 8px 0 var(--primary-light)}
 .class-card.featured{background:var(--primary);color:var(--white);box-shadow:0 8px 0 var(--gold)}
 .class-media{height:220px;margin:14px;position:relative;border-radius:26px}
@@ -106,7 +126,7 @@ section{position:relative}
 .class-meta{display:flex;gap:8px}
 .chip{flex:1;display:flex;flex-direction:column;align-items:center;border-radius:16px;padding:8px 4px;font-size:13px;font-weight:800;color:var(--primary-dark)}
 .chip small{font-size:11px;font-weight:700;opacity:.7}
-.featured .btn{margin:0 26px 26px;width:308px}
+.class-card > .btn{display:flex;margin:0 26px 26px}
 .dots{display:flex;gap:10px;justify-content:center;margin-top:48px}
 .dots span{width:12px;height:12px;border-radius:6px;background:var(--primary-light)}
 .dots span.on{width:36px;background:var(--gold)}
@@ -342,9 +362,10 @@ select.field:has(option[value=""]:checked){color:var(--muted)}
   .hero .container{gap:40px}
   .hero-text h1{font-size:56px}
   .services .row{grid-template-columns:repeat(2,1fr)}
+  .classes .row{--vis:2}
   .about-card{padding:64px;gap:48px;border-radius:120px 64px 140px 80px}
   .stat{width:auto;flex:1}
-  .featured .btn{display:flex;width:auto}
+  .class-card > .btn{display:flex;width:auto}
   .enroll .container{gap:48px}
   .newsletter-card{padding:0 48px}
   .newsletter h2{font-size:32px}
@@ -360,7 +381,8 @@ select.field:has(option[value=""]:checked){color:var(--muted)}
   .about-card{flex-direction:column;align-items:stretch;padding:56px 48px}
   .about-text{flex:none}
   .about-art{flex:none;width:100%;max-width:460px;margin:0 auto}
-  .classes .row,.news .row{grid-template-columns:1fr;max-width:480px;margin:0 auto}
+  .news .row{grid-template-columns:1fr;max-width:480px;margin:0 auto}
+  .classes .row{--gap:20px;--vis:1;--w:min(420px,calc(100cqw - 2 * var(--gap) - 64px))}
   .plans{grid-template-columns:1fr;max-width:480px;gap:40px}
   .why .container{grid-template-columns:1fr}
   .enroll .container{flex-direction:column;align-items:stretch}
