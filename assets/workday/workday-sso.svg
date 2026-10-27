@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 652 440" width="652" height="440">
+  <title>SSO with Keycloak – sign in once</title>
+  <g stroke="#1A2442" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <rect width="652" height="440" rx="52" fill="#FFE3D1" stroke="none"/>
+    <circle cx="96" cy="370" r="110" fill="#FFF1E8" stroke="none"/>
+
+    <!-- dotted links from the sign-in card to the apps -->
+    <path d="M318 168Q400 120 448 104" fill="none" stroke="#9A7BF0" stroke-dasharray="1 10"/>
+    <path d="M318 196Q400 190 448 196" fill="none" stroke="#9A7BF0" stroke-dasharray="1 10"/>
+    <path d="M318 226Q400 260 448 288" fill="none" stroke="#9A7BF0" stroke-dasharray="1 10"/>
+    <path d="M318 250Q400 340 448 372" fill="none" stroke="#9A7BF0" stroke-dasharray="1 10"/>
+
+    <!-- sign-in card -->
+    <rect x="70" y="82" width="244" height="276" rx="28" fill="#1A2442" stroke="none" transform="translate(8,8)"/>
+    <rect x="70" y="82" width="244" height="276" rx="28" fill="#FFFFFF"/>
+    <circle cx="192" cy="138" r="30" fill="#F2B233"/>
+    <circle cx="183" cy="138" r="9" fill="#FFFFFF"/>
+    <path d="M192 138h18M204 138v8" fill="none"/>
+    <rect x="102" y="190" width="180" height="34" rx="12" fill="#F4F6FB"/>
+    <rect x="116" y="202" width="90" height="10" rx="5" fill="#1A2442" stroke="none"/>
+    <rect x="102" y="236" width="180" height="34" rx="12" fill="#F4F6FB"/>
+    <circle cx="124" cy="253" r="4" fill="#1A2442" stroke="none"/><circle cx="140" cy="253" r="4" fill="#1A2442" stroke="none"/><circle cx="156" cy="253" r="4" fill="#1A2442" stroke="none"/><circle cx="172" cy="253" r="4" fill="#1A2442" stroke="none"/><circle cx="188" cy="253" r="4" fill="#1A2442" stroke="none"/>
+    <rect x="102" y="290" width="180" height="40" rx="20" fill="#5B9BF0"/>
+    <rect x="152" y="305" width="80" height="10" rx="5" fill="#FFFFFF" stroke="none"/>
+
+    <!-- four apps, all signed in -->
+    <rect x="448" y="74" width="130" height="60" rx="18" fill="#FFF1CF"/>
+    <rect x="466" y="96" width="56" height="10" rx="5" fill="#1A2442" stroke="none"/>
+    <circle cx="552" cy="104" r="15" fill="#4CC39A"/><path d="M545 104l5 5 9-10" stroke="#FFFFFF" fill="none" stroke-width="3.5"/>
+
+    <rect x="448" y="166" width="130" height="60" rx="18" fill="#FFDCE5"/>
+    <rect x="466" y="188" width="56" height="10" rx="5" fill="#1A2442" stroke="none"/>
+    <circle cx="552" cy="196" r="15" fill="#4CC39A"/><path d="M545 196l5 5 9-10" stroke="#FFFFFF" fill="none" stroke-width="3.5"/>
+
+    <rect x="448" y="258" width="130" height="60" rx="18" fill="#DCEBFF"/>
+    <rect x="466" y="280" width="56" height="10" rx="5" fill="#1A2442" stroke="none"/>
+    <circle cx="552" cy="288" r="15" fill="#4CC39A"/><path d="M545 288l5 5 9-10" stroke="#FFFFFF" fill="none" stroke-width="3.5"/>
+
+    <rect x="448" y="342" width="130" height="60" rx="18" fill="#D5F3E6"/>
+    <rect x="466" y="364" width="56" height="10" rx="5" fill="#1A2442" stroke="none"/>
+    <circle cx="552" cy="372" r="15" fill="#4CC39A"/><path d="M545 372l5 5 9-10" stroke="#FFFFFF" fill="none" stroke-width="3.5"/>
+
+    <!-- doodles -->
+    <path d="M370 46l6 14 16 2-12 10 4 16-14-9-14 9 4-16-12-10 16-2z" fill="#FFFFFF"/>
+    <path d="M40 50v18M31 59h18" stroke="#9A7BF0"/>
+    <path d="M330 400c10-10 20 10 30 0s20 10 30 0" fill="none" stroke="#F2B233"/>
+    <path d="M610 40v14M603 47h14" stroke="#FF8FAB"/>
+  </g>
+</svg>
