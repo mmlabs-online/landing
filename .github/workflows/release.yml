@@ -1,19 +1,18 @@
 name: release
 
-# Every push to a release/** branch builds the site image once, smoke-tests it, pushes it to Docker
-# Hub, and then deploys that exact image (by digest) on the self-hosted Mac runner labelled
-# mmlabs-mac. If the new container is not healthy, the previous one is started again. Modelled on
-# CaleChip's build-image workflow and its deploy-calechip draft. docs/ops/ci-cd.md is the runbook.
+# Cut a branch release/vX.Y.Z (or release/X.Y.Z) and push it: this builds the site image, smoke-tests
+# it, pushes mingming21400/mmlabs-site:vX.Y.Z, and opens the pull request "site vX.Y.Z" on
+# mmlabs-online/deployment that pins apps/site/release.env to that image by digest.
+# Deploy = review + merge that pull request: deploy-site.yml then runs on the home server's runner.
+# Same flow as Ricotdin's and CaleChip's release workflows; they start from a tag, this from a branch.
 #
-# Cut a release:   git switch -c release/<name> main && git push -u origin release/<name>
-# Each later push to that branch is a new build and a new deploy.
+# A version is released once. A later push to the same branch with a new commit is refused: cut the
+# next version. Re-running a run for the same commit reuses the image it already pushed.
 #
-# NEEDS, added by the operator under Settings → Secrets and variables → Actions:
-#   secrets   DOCKERHUB_USERNAME, DOCKERHUB_TOKEN — read/write on the IMAGE repository below
-#   runner    a self-hosted macOS runner with the label mmlabs-mac (docs/ops/ci-cd.md § Mac runner)
-#
-# Only `push` starts this workflow, never `pull_request`: code that is not on a branch of this
-# repository must never run on the Mac.
+# NEEDS, under Settings → Secrets and variables → Actions:
+#   DOCKERHUB_USERNAME, DOCKERHUB_TOKEN   push to mingming21400/mmlabs-site
+#   DEPLOY_REPO_TOKEN                     fine-grained PAT on mmlabs-online/deployment ONLY:
+#                                         Contents + Pull requests read/write, nothing else
 
 on:
   push:
@@ -22,31 +21,34 @@ on:
 permissions:
   contents: read
 
+# One run per branch; a later push waits instead of cancelling a release in progress.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 env:
-  # Docker Hub repository. Its owner must be the DOCKERHUB_USERNAME account.
-  IMAGE: mingming21400/mmlabs-site
+  APP: site                          # folder apps/<APP>/ on the deployment repo
+  IMAGE: mingming21400/mmlabs-site   # Docker Hub repository
+  VAR: SITE_IMAGE                    # variable apps/site/compose.yml reads
+  VERSION_VAR: SITE_VERSION
+  DEPLOY_REPO: mmlabs-online/deployment
 
 jobs:
-  build-image:
-    runs-on: ubuntu-latest
+  release:
+    name: build · smoke test · push · open deployment PR
+    runs-on: ubuntu-latest   # GitHub's runner: app code never runs on the home server
     timeout-minutes: 20
-    # One build per commit; a later push never cancels an earlier build.
-    concurrency:
-      group: build-image-${{ github.sha }}
-      cancel-in-progress: false
-    outputs:
-      digest: ${{ steps.push.outputs.digest }}
-      version: ${{ steps.tag.outputs.version }}
     steps:
       - uses: actions/checkout@v7
 
-      - name: secrets present
+      - name: inputs present
         env:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          DEPLOY_REPO_TOKEN: ${{ secrets.DEPLOY_REPO_TOKEN }}
         run: |
           missing=""
-          for name in DOCKERHUB_USERNAME DOCKERHUB_TOKEN; do
+          for name in DOCKERHUB_USERNAME DOCKERHUB_TOKEN DEPLOY_REPO_TOKEN; do
             [ -n "${!name}" ] || missing="$missing $name"
           done
           if [ -n "$missing" ]; then
@@ -58,21 +60,21 @@ jobs:
             exit 1
           fi
 
-      - name: tag
-        id: tag
+      # release/v1.2.0 or release/1.2.0 -> v1.2.0. deploy-site.yml accepts vX.Y[.Z][-prerelease].
+      - name: version
+        id: version
         run: |
-          # release/2026-10-28 -> release-2026-10-28, a readable second tag next to sha-<7>.
-          branch="$(printf '%s' "$GITHUB_REF_NAME" | tr -c 'A-Za-z0-9_.-' '-' | cut -c1-100)"
+          if ! [[ "$GITHUB_REF_NAME" =~ ^release/v?([0-9]+\.[0-9]+(\.[0-9]+)?(-[0-9A-Za-z.-]+)?)$ ]]; then
+            echo "::error::Branch $GITHUB_REF_NAME is not release/vX.Y.Z (e.g. release/v1.2.0). Nothing was built."
+            exit 1
+          fi
+          tag="v${BASH_REMATCH[1]}"
           {
-            echo "version=sha-${GITHUB_SHA::7}"
-            echo "tags<<EOF"
-            echo "${IMAGE}:sha-${GITHUB_SHA::7}"
-            echo "${IMAGE}:${branch}"
-            echo "EOF"
+            echo "tag=$tag"
+            echo "target=${IMAGE}:${tag}"
+            echo "source=${IMAGE}:sha-${GITHUB_SHA::7}"
           } >> "$GITHUB_OUTPUT"
 
-      # arm64 for an Apple silicon Mac, amd64 for an Intel Mac or a Linux server.
-      - uses: docker/setup-qemu-action@v4
       - uses: docker/setup-buildx-action@v4
 
       - uses: docker/login-action@v4
@@ -80,20 +82,49 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: build (amd64, for the smoke test)
+      # A version tag is never moved. If :vX.Y.Z exists it must be this commit's image (a re-run).
+      - name: already released?
+        id: existing
+        env:
+          TARGET: ${{ steps.version.outputs.target }}
+          SOURCE: ${{ steps.version.outputs.source }}
+        run: |
+          if ! existing="$(docker buildx imagetools inspect "$TARGET" --format '{{.Manifest.Digest}}' 2>/dev/null)"; then
+            echo "reuse=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          mine="$(docker buildx imagetools inspect "$SOURCE" --format '{{.Manifest.Digest}}' 2>/dev/null || true)"
+          if [ "$mine" != "$existing" ]; then
+            echo "::error::$TARGET was already released from another commit. Cut the next version (e.g. a higher patch) instead of pushing to $GITHUB_REF_NAME. Nothing was built."
+            exit 1
+          fi
+          echo "$TARGET is already this commit's image ($existing): reusing it."
+          { echo "reuse=true"; echo "digest=$existing"; } >> "$GITHUB_OUTPUT"
+
+      - name: build
+        if: steps.existing.outputs.reuse != 'true'
         uses: docker/build-push-action@v7
         with:
           context: .
-          platforms: linux/amd64
           load: true
           push: false
-          tags: mmlabs-site:smoke
+          provenance: false
+          tags: |
+            ${{ steps.version.outputs.target }}
+            ${{ steps.version.outputs.source }}
+          labels: |
+            org.opencontainers.image.version=${{ steps.version.outputs.tag }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: smoke test
+        if: steps.existing.outputs.reuse != 'true'
+        env:
+          TARGET: ${{ steps.version.outputs.target }}
         run: |
-          docker run -d --name smoke -p 3000:3000 mmlabs-site:smoke
+          docker run -d --name smoke -p 3000:3000 "$TARGET"
           ok=""
           for i in $(seq 1 30); do
             if [ "$(curl -fsS http://127.0.0.1:3000/healthz 2>/dev/null)" = "ok" ]; then ok=1; break; fi
@@ -124,146 +155,85 @@ jobs:
 
       - name: remove smoke container
         if: always()
-        run: docker rm -f smoke || true
+        run: docker rm -f smoke >/dev/null 2>&1 || true
 
-      # Same Dockerfile and build cache as the smoke build, so amd64 is not rebuilt; arm64 is added.
-      - name: push (amd64 + arm64)
+      # Pushes the image that was just tested, not a second build.
+      - name: push
         id: push
-        uses: docker/build-push-action@v7
-        with:
-          context: .
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ steps.tag.outputs.tags }}
-          labels: |
-            org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: summary
+        if: steps.existing.outputs.reuse != 'true'
         env:
-          TAGS: ${{ steps.tag.outputs.tags }}
-          DIGEST: ${{ steps.push.outputs.digest }}
+          TARGET: ${{ steps.version.outputs.target }}
+          SOURCE: ${{ steps.version.outputs.source }}
         run: |
-          {
-            echo "### Image"
-            echo ""
-            while read -r t; do echo "- \`$t\`"; done <<< "$TAGS"
-            echo "- Digest: \`$DIGEST\`"
-          } >> "$GITHUB_STEP_SUMMARY"
+          docker push "$SOURCE"
+          docker push "$TARGET"
+          digest="$(docker inspect --format '{{index .RepoDigests 0}}' "$TARGET")"
+          echo "digest=${digest#*@}" >> "$GITHUB_OUTPUT"
 
-  deploy:
-    needs: build-image
-    runs-on: [self-hosted, macOS, mmlabs-mac]
-    # Add required reviewers to the prod environment (Settings → Environments) to approve each deploy.
-    environment: prod
-    timeout-minutes: 15
-    # One deploy at a time across all release branches; a running deploy is never cancelled.
-    concurrency:
-      group: deploy-mmlabs-site
-      cancel-in-progress: false
-    env:
-      DIGEST: ${{ needs.build-image.outputs.digest }}
-      VERSION: ${{ needs.build-image.outputs.version }}
-      # Same name and port as the README's docker run, so a container started by hand is replaced.
-      # cloudflared on the Mac points mmlabs.online at http://localhost:3000.
-      CONTAINER: mmlabs-home
-      PORT: "3000"
-    defaults:
-      run:
-        shell: bash
-    steps:
-      - name: docker on PATH
+      # Writes only apps/site/release.env (the deployment repo's pr-scope.yml requires it).
+      # Same steps as Ricotdin's "Open deployment PR".
+      - name: open deployment PR
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.DEPLOY_REPO_TOKEN }}
+          TAG: ${{ steps.version.outputs.tag }}
+          DIGEST: ${{ steps.push.outputs.digest || steps.existing.outputs.digest }}
         run: |
-          # A runner started by launchd gets a minimal PATH. Add the usual Docker locations on macOS
-          # (Homebrew on Apple silicon and Intel, Docker Desktop, OrbStack).
-          for d in /opt/homebrew/bin /usr/local/bin /Applications/Docker.app/Contents/Resources/bin "$HOME/.orbstack/bin"; do
-            if [ -d "$d" ]; then echo "$d" >> "$GITHUB_PATH"; fi
-          done
-
-      - name: image
-        run: |
+          BRANCH="release/$APP-$TAG"
+          FILE="apps/$APP/release.env"
           if ! [[ "$DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]; then
-            echo "::error::build-image passed no digest ('$DIGEST'). Nothing was deployed."
+            echo "::error::No image digest ('$DIGEST'). Nothing was opened."
             exit 1
           fi
-          echo "REF=${IMAGE}@${DIGEST}" >> "$GITHUB_ENV"
 
-      - name: docker ready
-        run: |
-          if ! docker info >/dev/null 2>&1; then
-            echo "::error::Docker is not running on $(hostname) for user $(id -un). Start Docker Desktop (or OrbStack/Colima) and re-run this job."
-            exit 1
+          gh auth setup-git
+          gh repo clone "$DEPLOY_REPO" deployment -- --depth 1
+          cd deployment
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+
+          mkdir -p "apps/$APP"
+          {
+            echo "# Written by the $APP release workflow for $TAG (commit $GITHUB_SHA). Do not edit by hand."
+            echo "$VAR=$IMAGE:$TAG@$DIGEST"
+            echo "$VERSION_VAR=$TAG"
+          } > "$FILE"
+
+          git add "$FILE"
+          # Re-run after the pull request was merged: release.env is already right, nothing to commit.
+          if git diff --cached --quiet; then
+            echo "$FILE already pins $TAG on the default branch — nothing to do."
+            echo "url=already merged" >> "$GITHUB_OUTPUT"
+            exit 0
           fi
-          echo "runner $RUNNER_NAME, user $(id -un), $(uname -m), docker $(docker version --format '{{.Server.Version}}')"
+          git commit -m "$APP $TAG"
+          # --force: re-running for the same version rewrites the old branch.
+          git push --force -u origin "$BRANCH"
 
-      - name: pull
-        run: docker pull "$REF"
-
-      - name: deploy
-        id: deploy
-        run: |
-          # $1 = path to probe, $2 = expected body ("" = any 200). 60 tries, 1s apart.
-          healthy() {
-            for _ in $(seq 1 60); do
-              body="$(curl -fsS "http://127.0.0.1:${PORT}$1" 2>/dev/null)" && { [ -z "$2" ] || [ "$body" = "$2" ]; } && return 0
-              sleep 1
-            done
-            return 1
-          }
-          start() {
-            docker run -d --name "$CONTAINER" --restart unless-stopped -p "${PORT}:3000" \
-              --label org.mmlabs.release="$GITHUB_REF_NAME" --label org.mmlabs.version="$VERSION" "$1" >/dev/null
-          }
-
-          previous=""
-          if docker container inspect "$CONTAINER" >/dev/null 2>&1; then
-            previous="$(docker container inspect -f '{{.Image}}' "$CONTAINER")"
-            docker rm -f "${CONTAINER}-prev" >/dev/null 2>&1 || true
-            docker stop "$CONTAINER" >/dev/null
-            docker rename "$CONTAINER" "${CONTAINER}-prev"
-          fi
-
-          if start "$REF" && healthy /healthz ok; then
-            docker rm -f "${CONTAINER}-prev" >/dev/null 2>&1 || true
-            result=deployed
+          # Only an open pull request counts (gh pr view also returns closed or merged ones).
+          url="$(gh pr list --head "$BRANCH" --state open --json url -q '.[0].url')"
+          if [ -n "$url" ]; then
+            echo "Pull request $url is open — its branch was updated."
           else
-            echo "::group::logs of the failed container"
-            docker logs "$CONTAINER" 2>&1 | tail -n 50 || true
-            echo "::endgroup::"
-            docker rm -f "$CONTAINER" >/dev/null 2>&1 || true
-            if [ -z "$previous" ]; then
-              result=no-previous
-            else
-              docker rename "${CONTAINER}-prev" "$CONTAINER"
-              docker start "$CONTAINER" >/dev/null
-              # An image from before this workflow has no /healthz, so the restore only needs a 200 on /.
-              if healthy / ""; then result=restored; else result=restore-failed; fi
-            fi
+            url="$(gh pr create --title "$APP $TAG" --head "$BRANCH" \
+              --body "Deploy \`$IMAGE:$TAG@$DIGEST\` (commit $GITHUB_SHA). Written by $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID. Merging runs deploy-site on the home server.")"
           fi
-          echo "result=$result" >> "$GITHUB_OUTPUT"
-          echo "previous=$previous" >> "$GITHUB_OUTPUT"
-          [ "$result" = deployed ]
-
-      - name: clean up old images
-        if: success()
-        run: |
-          # Unused mmlabs-site images only; the running one is kept. A rollback pulls by digest again.
-          docker image prune -af --filter "label=org.opencontainers.image.source=${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" >/dev/null || true
+          echo "url=$url" >> "$GITHUB_OUTPUT"
 
       - name: summary
         if: always()
         env:
-          RESULT: ${{ steps.deploy.outputs.result }}
-          PREVIOUS: ${{ steps.deploy.outputs.previous }}
+          TAG: ${{ steps.version.outputs.tag }}
+          TARGET: ${{ steps.version.outputs.target }}
+          DIGEST: ${{ steps.push.outputs.digest || steps.existing.outputs.digest }}
+          PR_URL: ${{ steps.pr.outputs.url }}
         run: |
-          case "$RESULT" in
-            deployed)       msg="deployed: \`$REF\` is running on $(hostname) and healthy." ;;
-            restored)       msg="restored: \`$REF\` failed its health check; the previous image \`$PREVIOUS\` is running again." ;;
-            no-previous)    msg="no-previous: \`$REF\` failed its health check and nothing was running before it. The site is down." ;;
-            restore-failed) msg="restore-failed: \`$REF\` failed its health check and so did the previous image. The site is down and needs a hand on the Mac." ;;
-            *)              msg="did-not-complete: the deploy stopped before the swap (see the failed step). The running container was not touched." ;;
-          esac
-          { echo "### Deploy ($GITHUB_REF_NAME)"; echo ""; echo "$msg"; } >> "$GITHUB_STEP_SUMMARY"
-          echo "$msg"
+          {
+            echo "### Release ${TAG:-not started}"
+            echo ""
+            echo "- Image: \`${TARGET}@${DIGEST:-not pushed}\`"
+            echo "- Deployment pull request: ${PR_URL:-not opened}"
+            echo ""
+            echo "Merge the pull request on $DEPLOY_REPO to deploy."
+          } >> "$GITHUB_STEP_SUMMARY"

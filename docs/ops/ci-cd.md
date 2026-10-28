@@ -1,128 +1,90 @@
-# CI/CD: how mmlabs.online is checked, built and deployed
+# CI/CD: how mmlabs.online is checked, released and deployed
 
-Modelled on CaleChip's pipeline (`build-image`, `runner-check`, and the `deploy-calechip` draft), but
-smaller: there is no deployment repository. A push to a `release/**` branch builds the image and
-deploys it on the Mac in the same run. **Where this page and a workflow disagree, the workflow is
-right.**
+The same flow as Ricotdin and CaleChip. This repository builds and pushes the image; the
+[`mmlabs-online/deployment`](https://github.com/mmlabs-online/deployment) repository decides what runs
+on the home server. **Where this page and a workflow disagree, the workflow is right.**
 
 ```mermaid
 flowchart LR
   A["pull request<br/>verify"] --> B["merge to main"]
-  B --> C["cut release/&lt;name&gt;<br/>release: build-image<br/>pushes :sha-&lt;7&gt;"]
-  C --> D["release: deploy<br/>Mac runner mmlabs-mac<br/>pull, swap, health check"]
+  B --> C["cut release/vX.Y.Z<br/>release: build, smoke test,<br/>push :vX.Y.Z"]
+  C --> D["PR 'site vX.Y.Z'<br/>on deployment"]
+  D --> E["merge it<br/>deploy-site on the<br/>home server's runner"]
 ```
 
 ## Workflows
 
-| Workflow | File | Trigger | Runs on | What it does |
-|---|---|---|---|---|
-| `verify` | `.github/workflows/verify.yml` | pull request to `main` or `release/**` | GitHub-hosted | `build.py`, no unfilled `{{…}}` token, every app and blog page written |
-| `release` → `build-image` | `.github/workflows/release.yml` | push to `release/**` | GitHub-hosted | builds the image, smoke-tests `/healthz` and every page, pushes `amd64` + `arm64` as `:sha-<7>` and `:release-<name>` |
-| `release` → `deploy` | same file | after `build-image` | **self-hosted Mac, label `mmlabs-mac`** | pulls that digest, replaces the `mmlabs-home` container on port 3000, health-checks it, restores the previous container on failure |
-| `runner-check` | `.github/workflows/runner-check.yml` | by hand (`workflow_dispatch`) | Mac | proves the runner picks up jobs, is not root, and reaches Docker |
-
-- **Nothing runs on a push to `main`.** The old `docker.yml` (push to `main` → `:latest`) was
-  removed. `:latest` is no longer pushed and is never deployed. The deploy uses only
-  `mingming21400/mmlabs-site@sha256:<digest>`, the image that passed the smoke test.
-- **No `pull_request` workflow runs on the Mac.** Only a push to a branch of this (private)
-  repository can start a job there. Keep it that way: pull request code must never reach the Mac.
-
-## Secrets and settings
-
-Names only. No value belongs in any file.
-
-| Name | Kind | Where | Used by |
+| Workflow | Where | Trigger | What it does |
 |---|---|---|---|
-| `DOCKERHUB_USERNAME` | secret | Settings → Secrets and variables → Actions | `build-image` |
-| `DOCKERHUB_TOKEN` | secret | same | `build-image`: a Docker Hub access token, read/write |
-| `prod` | environment | Settings → Environments | `deploy`. Created on the first run. Add **required reviewers** there if each deploy should wait for approval. |
+| `verify` | this repo, `.github/workflows/verify.yml` | pull request to `main` or `release/**` | `build.py`, no unfilled `{{…}}` token, every app and blog page written |
+| `release` | this repo, `.github/workflows/release.yml` | push to `release/**` | builds the image, smoke-tests `/healthz` and every page, pushes `mingming21400/mmlabs-site:vX.Y.Z` (and `:sha-<7>`), opens the pull request `site vX.Y.Z` on the deployment repo |
+| `pr-scope` | deployment repo | that pull request | a `release/site-v…` pull request may change only `apps/site/` |
+| `deploy-site` | deployment repo | merge to `main` touching `apps/site/**` | on the home server's self-hosted runner: pull the pinned image, `compose up --wait`, restore the previous version if unhealthy, comment the result on the pull request |
 
-- The image name is `IMAGE` at the top of `release.yml` (`mingming21400/mmlabs-site`). Its owner must
-  be the `DOCKERHUB_USERNAME` account, or `build-image` stops at `secrets present` and says so.
-- The Mac needs no GitHub secret. If the Docker Hub repository is **private**, run `docker login`
-  once on the Mac as the runner's user; the credential stays in that user's Docker config.
+- **Nothing deploys from this repository.** Code here only ever runs on GitHub's runners; the home
+  server runs only what is merged on the deployment repo.
+- **Nothing runs on a push to `main`**, and `:latest` is no longer pushed. The deploy uses only
+  `mingming21400/mmlabs-site:vX.Y.Z@sha256:<digest>`, the image that passed the smoke test.
 
-## Mac runner
+## Secrets
 
-Done once, by hand, on the Mac that serves mmlabs.online. Each step ends with a **Check**.
+Names only. No value belongs in any file. Settings → Secrets and variables → Actions on **this**
+repository:
 
-1. **Docker runs at login.** Install Docker Desktop (or OrbStack/Colima), turn on *Start when you sign
-   in*, and sign in to the Mac.
-   **Check:** `docker run --rm hello-world` prints *Hello from Docker!*
+| Name | Used by | Scope |
+|---|---|---|
+| `DOCKERHUB_USERNAME` | `release` | the Docker Hub account that owns `mingming21400/mmlabs-site` |
+| `DOCKERHUB_TOKEN` | `release` | a Docker Hub access token, read/write |
+| `DEPLOY_REPO_TOKEN` | `release` | a **fine-grained** token on `mmlabs-online/deployment` **only**: Contents and Pull requests read/write, nothing else. The same kind Ricotdin and CaleChip use. |
 
-2. **The Mac stays awake and comes back after a restart.** A sleeping Mac takes the runner with it.
-   ```bash
-   sudo pmset -a sleep 0 disksleep 0
-   sudo pmset -a autorestart 1   # power back on after a power cut
-   ```
-   Turn on automatic login for the runner's user (System Settings → Users & Groups). The runner and
-   Docker Desktop both start in that user's session.
-   **Check:** `pmset -g | grep -E ' sleep|autorestart'` shows `sleep 0` and `autorestart 1`.
-
-3. **Register the runner** for this repository only. On GitHub: *Settings → Actions → Runners →
-   New self-hosted runner → macOS*, and pick the architecture of the Mac (`uname -m`: `arm64` or
-   `x86_64`). Run the download commands it shows, as your normal user and **not** with `sudo`. Then:
-   ```bash
-   ./config.sh --url https://github.com/mmlabs-online/landing --token <token from that page> \
-     --name mmlabs-mac --labels mmlabs-mac --unattended
-   ```
-   **Check:** the runner `mmlabs-mac` is listed on that page with the labels `self-hosted`, `macOS`,
-   `ARM64` or `X64`, and `mmlabs-mac`.
-
-4. **Run it as a service** so it starts at login with no terminal open:
-   ```bash
-   ./svc.sh install
-   ./svc.sh start
-   ./svc.sh status
-   ```
-   **Check:** `./svc.sh status` says *Started*, and the runner shows **Idle** on GitHub.
-
-5. **Point the tunnel at the container.** cloudflared on the Mac sends `mmlabs.online` to
-   `http://localhost:3000`. That is the port the deploy publishes.
-
-6. **Prove it.** Actions → `runner-check` → *Run workflow*.
-   **Check:** green, and the log shows your user (not root) and the Docker version. Run it again
-   after restarting the Mac.
-
-A container started by hand with the README's `docker run --name mmlabs-home … -p 3000:3000` is
-fine: the first deploy replaces it, and keeps it as the fallback until the new one is healthy.
+The image name is `IMAGE` at the top of `release.yml`. If `DOCKERHUB_USERNAME` is another account,
+`release` stops at `inputs present` and says so.
 
 ## Cutting a release
 
-1. Make sure what you want to ship is on `main`, and that its pull request's `verify` was green.
-2. Cut the branch and push it:
+1. What you want to ship is on `main`, and its pull request's `verify` was green.
+2. Choose the version. The site runs `v0.2` today (`apps/site/release.env` on the deployment repo),
+   so the next one is e.g. `v0.3.0`. A pre-release is `vX.Y.Z-rc.1`.
+3. Cut the branch and push it:
    ```bash
    git switch main && git pull
-   git switch -c release/2026-10-28
-   git push -u origin release/2026-10-28
+   git switch -c release/v0.3.0
+   git push -u origin release/v0.3.0
    ```
-3. Watch Actions → `release`. `build-image` pushes `mingming21400/mmlabs-site:sha-<7>` and
-   `:release-2026-10-28`, then `deploy` runs on the Mac. If `prod` has required reviewers, approve it.
-4. **Confirm it.** The run's summary ends with `deployed: … is running on <mac> and healthy`.
+   `release/0.3.0` works too. Any other name under `release/` fails at `version` and builds nothing.
+4. `release` runs. Its summary gives the image digest and the link to the pull request
+   **`site v0.3.0`** on the deployment repo.
+5. **Review and merge that pull request.** It changes one file, `apps/site/release.env`. Merging it is
+   the deploy.
+6. **Confirm it.** `deploy-site` comments `deployed: …` on the merged pull request. Any other comment
+   is a case in [When a deploy fails](#when-a-deploy-fails).
 
-A fix for the release goes to the same branch (cherry-pick or commit, then push). Each push is a new
-build and a new deploy. Branch names: anything under `release/`, e.g. `release/2026-10-28` or
-`release/v1.2.0`.
+**A version is released once.** Pushing a new commit to `release/v0.3.0` after it was released fails
+at `already released?`: `:v0.3.0` is never moved. Put the fix on `main` and cut `release/v0.3.1`.
+Re-running a failed `release` run for the same commit is fine: it reuses the image it already pushed
+and updates the open pull request.
 
 ## When a deploy fails
 
-The deploy keeps the previous container stopped (renamed to `mmlabs-home-prev`) until the new one
-answers `ok` on `/healthz`. The summary gives one result:
+`deploy-site` on the deployment repo handles it, exactly as for CaleChip and Ricotdin:
 
-| Result | Meaning | What to do |
+| Comment | Meaning | What to do |
 |---|---|---|
-| `deployed` | the new image is running and healthy | nothing |
-| `restored` | the new image failed its health check; the previous one is running again | read the logs of the failed container in the run (*logs of the failed container*), fix, push again |
-| `no-previous` | the new image failed and nothing ran before it; **the site is down** | fix the image and push again |
-| `restore-failed` | the new image failed, and so did the previous one; **the site is down** | on the Mac: `docker ps -a`, `docker logs mmlabs-home`, then start a known-good image (below) |
-| `did-not-complete` | stopped before the swap (Docker not running, pull failed, …) | the running container was not touched; fix the cause and re-run the job |
+| `deployed` | the new version is running and healthy | nothing |
+| `restored` | the new version failed its health check; the previous one is running again and the revert is on the deployment repo's `main` | find out why, fix on `main`, cut the next version |
+| `no-previous` | the new version failed and there was nothing to go back to | fix the image and cut the next version |
+| `restore-failed` | the new version failed and so did the previous one; **the site is down** | on the server: `docker compose -p site logs`, then deploy a known-good `release.env` by hand (below) |
+| `restore-unpushed` | the previous version is running but the revert could not be pushed | push the revert to the deployment repo's `main` by hand |
 
-**Roll back to an earlier release by hand:** find the digest in that release's `build-image`
-summary, then on the Mac:
+**Roll back a healthy but wrong release:** on the deployment repo, revert the merged `site vX.Y.Z`
+pull request (GitHub's *Revert* button) and merge the revert. `deploy-site` deploys the previous pin
+through the same path.
+
+**By hand, when GitHub or the runner is down** (from a checkout of the deployment repo at the
+known-good commit):
 
 ```bash
-docker rm -f mmlabs-home
-docker run -d --name mmlabs-home --restart unless-stopped -p 3000:3000 mingming21400/mmlabs-site@sha256:<digest>
+docker compose -p site -f apps/site/compose.yml --env-file apps/site/release.env up -d --wait
 ```
 
-Or open that older `release` run and re-run only its `deploy` job.
+Then merge a revert on the deployment repo so its `main` matches what is running.

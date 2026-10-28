@@ -1,4 +1,0 @@
-self-hosted-runner:
-  # The Mac that deploys mmlabs.online (docs/ops/ci-cd.md § Mac runner).
-  labels:
-    - mmlabs-mac
