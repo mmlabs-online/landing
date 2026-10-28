@@ -21,13 +21,21 @@ Watch mode rebuilds when `apps.json`, `home.html`, `assets/`, `pages/`, `blog/` 
 2. Write the article body in `blog/<slug>.html`. `{{page:slug}}` links to an app page and `{{home}}` to the home page.
 3. Run `python3 build.py`. The post is published at `blog/<slug>/`, uses the home page's header, newsletter and footer, and shows up in "Fresh from the lab" (`{{posts}}` in `home.html`).
 
-## Serve (WSL + Docker)
+## Deploy
+Push a `release/**` branch. The `release` workflow builds the image, smoke-tests it, pushes it to Docker Hub and deploys it on the self-hosted Mac runner (`mmlabs-mac`), with a health check and automatic rollback:
+
+    git switch -c release/2026-10-28 main
+    git push -u origin release/2026-10-28
+
+Setup (secrets, Mac runner), the workflows and what to do when a deploy fails: [docs/ops/ci-cd.md](docs/ops/ci-cd.md).
+
+## Serve by hand (Docker)
 The image builds the site itself and serves it with nginx on port 3000:
 
     docker build -t mmlabs-site .
     docker run -d --name mmlabs-home --restart unless-stopped -p 3000:3000 mmlabs-site
 
-Point the Cloudflare Tunnel hostname `mmlabs.online` to `http://localhost:3000`.
+Point the Cloudflare Tunnel hostname `mmlabs.online` to `http://localhost:3000`. The release workflow uses the same container name and port, so its first deploy replaces this container.
 
 ## Notes
 - Pages are plain HTML. The home page adds one small script, `assets/home.js`, for the interaction states in `design/mmlabs-interaction-states.html` (Apps dropdown, sticky header, section highlight in the nav, clickable cards, form checks and toast). Without it every link and form still works.

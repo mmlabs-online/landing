@@ -22,6 +22,13 @@ server {
     gzip_min_length 256;
     gzip_types text/css application/javascript text/javascript image/svg+xml;
 
+    # Liveness probe for the release workflow's smoke test and deploy health check.
+    location = /healthz {
+        access_log off;
+        default_type text/plain;
+        return 200 "ok";
+    }
+
     location /assets/ {
         add_header Cache-Control "public, max-age=2592000";
         try_files $uri =404;
@@ -36,4 +43,4 @@ EOF
 COPY --from=build /src/dist /usr/share/nginx/html
 EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD wget -q --spider http://127.0.0.1:3000/ || exit 1
+    CMD wget -q --spider http://127.0.0.1:3000/healthz || exit 1
