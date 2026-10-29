@@ -63,6 +63,7 @@ section{position:relative}
 /* Services */
 .services{padding:110px 0 100px}
 .services .row{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.services .row > .service:last-child:nth-child(3n+1){grid-column:2}
 .service{border-radius:36px;padding:28px 24px;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center}
 .service-icon{width:120px;height:120px;border-radius:60px;background:var(--white);display:flex;align-items:center;justify-content:center;border:3px solid var(--primary-dark)}
 .service h3{font-size:22px}
@@ -362,6 +363,7 @@ select.field:has(option[value=""]:checked){color:var(--muted)}
   .hero .container{gap:40px}
   .hero-text h1{font-size:56px}
   .services .row{grid-template-columns:repeat(2,1fr)}
+  .services .row > .service:last-child:nth-child(odd){grid-column:1 / -1;justify-self:center;width:calc(50% - 12px)}
   .classes .row{--vis:2}
   .about-card{padding:64px;gap:48px;border-radius:120px 64px 140px 80px}
   .stat{width:auto;flex:1}
@@ -435,4 +437,5 @@ select.field:has(option[value=""]:checked){color:var(--muted)}
 }
 @media (max-width:560px){
   .services .row{grid-template-columns:1fr}
+  .services .row > .service:last-child:nth-child(odd){width:auto;justify-self:stretch}
 }

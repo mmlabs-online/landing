@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CertTracker · Every certificate, before it expires</title>
+<meta name="description" content="CertTracker replaces the team's certificate spreadsheet with one shared record: everyone keeps their own certificates current, managers see their teams at a glance, and expiry reminders arrive in time.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Geist+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  /* Tokens: copied from CertTracker's src/app/globals.css (docs/design-system.md §2). */
+  :root {
+    --background: #F6F7F5;
+    --foreground: #15212B;
+    --card: #FFFFFF;
+    --muted: #EDF0EE;
+    --muted-foreground: #56636C;
+    --primary: #0E5C58;
+    --primary-foreground: #FFFFFF;
+    --primary-hover: #0A4744;
+    --accent: #E2EFEC;
+    --border: #D8DEDB;
+    --input: #83908C;
+    --ring: #1C7C75;
+
+    --status-active-fg: #1D6636; --status-active-bg: #E7F3EB; --status-active-border: #A8D2B4;
+    --status-60-fg: #7A5200; --status-60-bg: #FFF5DC; --status-60-border: #EDCB7E;
+    --status-soon-fg: #9A3D0B; --status-soon-bg: #FDEADD; --status-soon-border: #EFB189;
+    --status-expired-fg: #B42318; --status-expired-bg: #FDE8E6; --status-expired-border: #F0ADA7;
+    --status-none-fg: #4A5560; --status-none-bg: #EEF1F0; --status-none-border: #D3D9D6;
+
+    --radius-sm: 4px;
+    --radius: 6px;
+    --radius-xl: 8px;
+
+    /* The app's scale (13/14/15/20/28) is for dense screens; this page extends it for reading. */
+    --fs-caption: 13px;
+    --fs-body: 17px;
+    --fs-lead: 19px;
+    --fs-h3: 18px;
+    --fs-h2: clamp(28px, 3.4vw, 38px);
+    --fs-h1: clamp(38px, 6.2vw, 68px);
+
+    --font-sans: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "Geist Mono", ui-monospace, Consolas, monospace;
+    --page: 1120px;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; } }
+  body {
+    margin: 0;
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-sans);
+    font-size: var(--fs-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  img, svg { display: block; }
+  a { color: var(--primary); }
+  a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; border-radius: var(--radius-sm); }
+  .wrap { max-width: var(--page); margin: 0 auto; padding: 0 24px; }
+  @media (max-width: 640px) { .wrap { padding: 0 16px; } }
+  .skip { position: absolute; left: -999px; top: 8px; background: var(--primary); color: #fff; padding: 8px 12px; border-radius: var(--radius); z-index: 50; }
+  .skip:focus { left: 8px; }
+
+  /* Buttons */
+  .btn { display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: var(--radius); font: 600 15px/1 var(--font-sans); text-decoration: none; border: 1px solid transparent; cursor: pointer; }
+  .btn-primary { background: var(--primary); color: var(--primary-foreground); }
+  .btn-primary:hover { background: var(--primary-hover); }
+  .btn-ghost { background: var(--card); color: var(--foreground); border-color: var(--input); }
+  .btn-ghost:hover { background: var(--accent); }
+  .pill { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-caption); font-weight: 500; color: var(--muted-foreground); }
+  .pill::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--status-60-fg); }
+
+
+  /* Product nav */
+  .nav { position: sticky; top: 0; z-index: 20; background: rgba(246, 247, 245, 0.94); backdrop-filter: blur(6px); border-bottom: 1px solid var(--border); }
+  .nav .wrap { display: flex; align-items: center; gap: 24px; height: 60px; }
+  .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--foreground); }
+  .brand-name { font-weight: 600; font-size: 18px; letter-spacing: -0.02em; }
+  .brand-name span { color: var(--primary); }
+  .brand-kind { color: var(--muted-foreground); font-size: 14px; padding-left: 12px; border-left: 1px solid var(--border); }
+  .nav ul { display: flex; gap: 22px; margin: 0 0 0 auto; padding: 0; list-style: none; font-size: 15px; }
+  .nav ul a { color: var(--muted-foreground); text-decoration: none; }
+  .nav ul a:hover { color: var(--foreground); }
+  @media (max-width: 900px) { .nav ul, .brand-kind { display: none; } }
+
+  /* Hero */
+  .hero { padding: 72px 0 40px; }
+  .eyebrow { color: var(--primary); font-weight: 600; font-size: 15px; margin: 0 0 16px; }
+  h1 { font-size: var(--fs-h1); line-height: 1.04; letter-spacing: -0.035em; font-weight: 700; margin: 0; max-width: 13ch; }
+  .lead { font-size: var(--fs-lead); line-height: 1.6; color: var(--muted-foreground); max-width: 60ch; margin: 24px 0 0; }
+  .lead strong { color: var(--foreground); font-weight: 600; }
+  .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-top: 32px; }
+
+  /* The dossier: the one interactive moment */
+  .dossier { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 16px; margin-top: 48px; }
+  @media (max-width: 960px) { .dossier { grid-template-columns: 1fr; } }
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xl); }
+  .panel-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+  .panel-title { font-weight: 600; font-size: 15px; margin: 0; }
+  .panel-sub { font-size: var(--fs-caption); color: var(--muted-foreground); margin: 2px 0 0; }
+  .lookahead { display: flex; align-items: center; gap: 12px; font-size: 14px; }
+  .lookahead label { font-weight: 500; white-space: nowrap; }
+  .lookahead output { font-variant-numeric: tabular-nums; min-width: 16ch; color: var(--primary); font-weight: 600; }
+  input[type="range"] { accent-color: var(--primary); width: 180px; }
+  @media (max-width: 640px) { input[type="range"] { width: 100%; } .lookahead { width: 100%; flex-wrap: wrap; } }
+
+  table.records { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .records th { text-align: left; font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted-foreground); background: var(--muted); padding: 8px 12px; }
+  .records td { padding: 10px 12px; border-top: 1px solid var(--border); vertical-align: middle; }
+  .records tr.is-focus td { background: var(--accent); }
+  .records tr.is-focus .avatar { background: var(--card); }
+  .who { display: flex; align-items: center; gap: 10px; }
+  .avatar { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 600; background: var(--accent); color: var(--primary); flex: none; }
+  .who b { font-weight: 500; display: block; line-height: 1.3; }
+  @media (min-width: 721px) { .who b { white-space: nowrap; } }
+  .code { font-family: var(--font-mono); font-size: 12px; color: var(--muted-foreground); }
+  .days { display: block; margin-top: 4px; font-size: 12px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+  .course { line-height: 1.35; }
+  .course small { display: block; color: var(--muted-foreground); font-size: 12px; }
+  .state { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .progress { display: inline-flex; align-items: center; gap: 8px; font-variant-numeric: tabular-nums; font-size: 13px; color: var(--muted-foreground); }
+  .bar { width: 64px; height: 4px; background: var(--muted); border-radius: 2px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: var(--primary); }
+
+  .badge { display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: var(--radius-sm); border: 1px solid; font-size: 12.5px; font-weight: 500; white-space: nowrap; line-height: 1.5; }
+  .badge svg { width: 13px; height: 13px; }
+  .b-active { color: var(--status-active-fg); background: var(--status-active-bg); border-color: var(--status-active-border); }
+  .b-60 { color: var(--status-60-fg); background: var(--status-60-bg); border-color: var(--status-60-border); }
+  .b-soon { color: var(--status-soon-fg); background: var(--status-soon-bg); border-color: var(--status-soon-border); }
+  .b-expired { color: var(--status-expired-fg); background: var(--status-expired-bg); border-color: var(--status-expired-border); font-weight: 600; }
+  .b-none { color: var(--status-none-fg); background: var(--status-none-bg); border-color: var(--status-none-border); }
+
+  .callout { display: flex; gap: 12px; align-items: flex-start; margin: 0; padding: 14px 20px; border-top: 1px solid var(--border); font-size: 15px; }
+  .callout svg { width: 20px; height: 20px; flex: none; margin-top: 2px; color: var(--status-soon-fg); }
+  .callout.ok svg { color: var(--status-active-fg); }
+
+  .overview { padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+  .overview h2 { font-size: 15px; font-weight: 600; margin: 0; }
+  .kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0; }
+  .kpis div { border-top: 1px solid var(--border); padding-top: 10px; }
+  .kpis dt { font-size: 12px; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted-foreground); }
+  .kpis dd { margin: 4px 0 0; font-size: 28px; line-height: 32px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px; }
+  .overview .note { font-size: var(--fs-caption); color: var(--muted-foreground); margin: 0; }
+
+  /* Mobile: rows become stacked records */
+  @media (max-width: 720px) {
+    table.records thead { display: none; }
+    table.records, .records tbody, .records tr, .records td { display: block; width: 100%; }
+    .records tr { padding: 12px 16px; border-top: 1px solid var(--border); display: grid; grid-template-columns: 1fr auto; gap: 8px 12px; }
+    .records td { border: 0; padding: 0; }
+    .records td.c-course { grid-column: 1 / -1; }
+    .records td.c-state { grid-column: 1; }
+    .records td.c-expiry { grid-column: 2; grid-row: 1; justify-self: end; text-align: right; }
+    .records tr.is-focus { background: var(--accent); }
+    .records tr.is-focus td { background: transparent; }
+  }
+
+  /* Sections */
+  section.block { padding: 88px 0; border-top: 1px solid var(--border); }
+  @media (max-width: 640px) { section.block { padding: 64px 0; } }
+  h2.title { font-size: var(--fs-h2); line-height: 1.15; letter-spacing: -0.025em; font-weight: 700; margin: 0; max-width: 22ch; }
+  .intro { color: var(--muted-foreground); max-width: 62ch; margin: 18px 0 0; }
+  h3 { font-size: var(--fs-h3); line-height: 1.35; font-weight: 600; margin: 0 0 6px; }
+  p { margin: 0; }
+  .muted { color: var(--muted-foreground); }
+
+  /* Problem: three situations, set like file notes */
+  .situations { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0; margin-top: 48px; border-top: 2px solid var(--foreground); }
+  .situations article { padding: 24px 28px 8px 0; }
+  .situations article + article { padding-left: 28px; border-left: 1px solid var(--border); }
+  .situations p { color: var(--muted-foreground); font-size: 16px; }
+  .quote { font-weight: 600; color: var(--foreground); }
+  @media (max-width: 860px) {
+    .situations { grid-template-columns: 1fr; }
+    .situations article, .situations article + article { padding: 24px 0; border-left: 0; border-bottom: 1px solid var(--border); }
+  }
+
+  /* Solution */
+  .pillars { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; margin-top: 48px; }
+  .pillars svg { width: 28px; height: 28px; color: var(--primary); margin-bottom: 14px; }
+  .pillars p { color: var(--muted-foreground); font-size: 16px; }
+  @media (max-width: 860px) { .pillars { grid-template-columns: 1fr; gap: 28px; } }
+
+  .rules { margin-top: 56px; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xl); display: grid; grid-template-columns: 300px minmax(0, 1fr); }
+  .rules-head { padding: 28px; background: var(--accent); border-radius: var(--radius-xl) 0 0 var(--radius-xl); }
+  .rules-head h3 { font-size: 20px; color: var(--primary); }
+  .rules-head p { font-size: 15px; color: var(--foreground); }
+  .rules ul { list-style: none; margin: 0; padding: 12px 28px; }
+  .rules li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 12px; padding: 14px 0; font-size: 16px; }
+  .rules li + li { border-top: 1px solid var(--border); }
+  .rules li svg { width: 20px; height: 20px; color: var(--primary); margin-top: 3px; }
+  .rules li span { color: var(--muted-foreground); }
+  .rules li b { color: var(--foreground); font-weight: 600; }
+  @media (max-width: 860px) { .rules { grid-template-columns: 1fr; } .rules-head { border-radius: var(--radius-xl) var(--radius-xl) 0 0; } }
+
+  /* How it works: a real sequence, so it is numbered */
+  .steps { list-style: none; padding: 0; margin: 56px 0 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; counter-reset: step; }
+  .steps li { position: relative; padding: 0 24px 0 0; counter-increment: step; }
+  .steps li::before { content: counter(step); display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: #fff; font-weight: 700; font-size: 16px; margin-bottom: 18px; position: relative; z-index: 1; }
+  .steps li::after { content: ""; position: absolute; top: 20px; left: 40px; right: 0; height: 2px; background: var(--border); }
+  .steps li:last-child::after { display: none; }
+  .steps p { color: var(--muted-foreground); font-size: 16px; }
+  @media (max-width: 860px) {
+    .steps { grid-template-columns: 1fr; gap: 28px; }
+    .steps li { padding: 0 0 0 60px; }
+    .steps li::before { position: absolute; left: 0; top: -4px; margin: 0; }
+    .steps li::after { top: 40px; left: 19px; right: auto; width: 2px; height: calc(100% + 0px); }
+  }
+
+  /* What's inside */
+  .parts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; margin-top: 48px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius-xl); overflow: hidden; }
+  .parts article { background: var(--card); padding: 26px 24px; display: flex; flex-direction: column; gap: 8px; }
+  .parts svg { width: 24px; height: 24px; color: var(--primary); margin-bottom: 6px; }
+  .parts p { color: var(--muted-foreground); font-size: 15.5px; flex: 1; }
+  .where { font-size: var(--fs-caption); color: var(--primary); font-weight: 500; margin-top: 6px; }
+  @media (max-width: 960px) { .parts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 620px) { .parts { grid-template-columns: 1fr; } }
+
+  /* Roles */
+  .roles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 48px; }
+  .role { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: 24px; }
+  .role-badge { display: inline-block; background: var(--muted); color: var(--foreground); font-size: 13px; font-weight: 500; padding: 2px 10px; border-radius: var(--radius-sm); }
+  .role h3 { margin-top: 14px; }
+  .role .for { font-size: 14px; color: var(--muted-foreground); margin-bottom: 14px; }
+  .role ul { margin: 0; padding: 14px 0 0; list-style: none; border-top: 1px solid var(--border); display: grid; gap: 10px; font-size: 15.5px; }
+  .role li { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 10px; }
+  .role li svg { width: 16px; height: 16px; color: var(--primary); margin-top: 4px; }
+  @media (max-width: 900px) { .roles { grid-template-columns: 1fr; } }
+
+  /* Your data */
+  .data { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 48px; margin: 48px 0 0; }
+  .data div { display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: 16px; padding: 18px 0; border-top: 1px solid var(--border); }
+  .data dt { font-weight: 600; color: var(--primary); font-size: 15px; }
+  .data dd { margin: 0; color: var(--muted-foreground); font-size: 16px; }
+  @media (max-width: 860px) { .data { grid-template-columns: 1fr; } .data div { grid-template-columns: 1fr; gap: 4px; } }
+
+  /* Coming next: deliberately unlike the built features */
+  .next-groups { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; margin-top: 48px; }
+  .next-group { border: 1.5px dashed var(--input); border-radius: var(--radius-xl); padding: 24px; background: transparent; }
+  .next-group header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .next-group h3 { font-size: 17px; margin: 0; }
+  .tag { font-size: 12.5px; font-weight: 500; color: var(--muted-foreground); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1px 8px; white-space: nowrap; }
+  .next-group ul { list-style: none; margin: 0; padding: 0; }
+  .next-group li { padding: 14px 0; border-top: 1px solid var(--border); }
+  .next-group li:first-child { border-top: 0; }
+  .next-group li b { display: block; font-weight: 600; font-size: 16px; }
+  .next-group li span { color: var(--muted-foreground); font-size: 15.5px; }
+  .safety { display: flex; gap: 10px; align-items: flex-start; margin-top: 12px; padding-top: 14px; border-top: 1px solid var(--border); font-size: 14.5px; color: var(--foreground); }
+  .safety svg { width: 18px; height: 18px; color: var(--primary); flex: none; margin-top: 3px; }
+  .ask { margin-top: 28px; font-size: var(--fs-lead); font-weight: 600; }
+  .ask span { font-weight: 400; color: var(--muted-foreground); }
+  @media (max-width: 860px) { .next-groups { grid-template-columns: 1fr; } }
+
+  /* Closing */
+  .closing { background: var(--primary); color: #fff; padding: 88px 0; }
+  .closing h2 { font-size: var(--fs-h2); line-height: 1.15; letter-spacing: -0.025em; margin: 0; max-width: 20ch; }
+  .closing p { color: #D5E7E3; max-width: 56ch; margin-top: 16px; font-size: var(--fs-lead); }
+  .closing .btn-primary { background: #fff; color: var(--primary); }
+  .closing .btn-primary:hover { background: var(--accent); }
+  .closing .pill { color: #D5E7E3; }
+  .closing .pill::before { background: #F2C35B; }
+  .closing a:focus-visible { outline-color: #fff; }
+
+  footer { padding: 28px 0 40px; font-size: 14px; color: var(--muted-foreground); }
+  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-check-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></symbol>
+    <symbol id="i-x-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/></symbol>
+    <symbol id="i-infinity" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16c5 0 7-8 12-8a4 4 0 0 1 0 8c-5 0-7-8-12-8a4 4 0 1 0 0 8"/></symbol>
+    <symbol id="i-dash-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-dasharray="3 3"><circle cx="12" cy="12" r="10"/></symbol>
+    <symbol id="i-loader" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.22-8.56"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></symbol>
+    <symbol id="i-records" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 5h8"/><path d="M13 12h8"/><path d="M13 19h8"/><path d="m3 17 2 2 4-4"/><path d="m3 7 2 2 4-4"/></symbol>
+    <symbol id="i-sheet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M8 13h2"/><path d="M14 13h2"/><path d="M8 17h2"/><path d="M14 17h2"/></symbol>
+    <symbol id="i-dashboard" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol>
+    <symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M12 6h.01"/><path d="M12 10h.01"/><path d="M12 14h.01"/><path d="M16 10h.01"/><path d="M16 14h.01"/><path d="M8 10h.01"/><path d="M8 14h.01"/></symbol>
+    <symbol id="i-one" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/></symbol>
+    <symbol id="i-user-pen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 15H7a4 4 0 0 0-4 4v2"/><path d="M21.38 16.62a1 1 0 0 0-3-3l-4.01 4.02a2 2 0 0 0-.51.85l-.84 2.87a.5.5 0 0 0 .62.62l2.87-.84a2 2 0 0 0 .85-.51z"/><circle cx="10" cy="7" r="4"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.27 21a2 2 0 0 0 3.46 0"/><path d="M3.26 15.33A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.67C19.41 13.96 18 12.5 18 8A6 6 0 0 0 6 8c0 4.5-1.41 5.96-2.74 7.33"/></symbol>
+    <symbol id="i-sparkles" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.14-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.14a.5.5 0 0 1 .96 0L14.06 8.5A2 2 0 0 0 15.5 9.94l6.14 1.58a.5.5 0 0 1 0 .96L15.5 14.06a2 2 0 0 0-1.44 1.44l-1.58 6.14a.5.5 0 0 1-.96 0z"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  </defs>
+</svg>
+
+
+<nav class="nav" aria-label="CertTracker">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="CertTracker, back to top">
+      <svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="7" fill="#0E5C58"/><path d="M22 11C20.4 8.5 17.6 7 14.5 7C9.8 7 6 11 6 16C6 21 9.8 25 14.5 25C17.6 25 20.4 23.5 22 21" stroke="#FFFFFF" stroke-width="3.2" stroke-linecap="round" fill="none"/><path d="M12 16L15 19L24.5 9.5" stroke="#E2EFEC" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      <span class="brand-name">Cert<span>Tracker</span></span>
+      <span class="brand-kind">Certificate and skill tracking</span>
+    </a>
+    <ul>
+      <li><a href="#problem">The problem</a></li>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#inside">Features</a></li>
+      <li><a href="#roles">Who it's for</a></li>
+      <li><a href="#next">Coming next</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main id="main">
+  <header class="hero" id="top">
+    <div class="wrap">
+      <h1>Every certificate, before it expires.</h1>
+      <p class="lead">CertTracker replaces the team's certificate spreadsheet with one shared record. <strong>Everyone keeps their own certificates current with proof</strong>, managers see their teams at a glance, and nobody finds out about an expired certificate too late.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="https://cert-tracker-three.vercel.app" target="_blank" rel="noopener" data-app-link>Open CertTracker</a>
+        <a class="btn btn-ghost" href="#how">See how it works</a>
+        <span class="pill">In development · early access</span>
+      </div>
+
+      <div class="dossier">
+        <div class="panel" aria-labelledby="dossier-title">
+          <div class="panel-head">
+            <div>
+              <p class="panel-title" id="dossier-title">Team Cloud · certificates</p>
+              <p class="panel-sub">Sample data. Drag “Look ahead” to see what expires next.</p>
+            </div>
+            <div class="lookahead">
+              <label for="ahead">Look ahead</label>
+              <input id="ahead" type="range" min="0" max="120" step="5" value="0" aria-describedby="ahead-out">
+              <output id="ahead-out" for="ahead">Today</output>
+            </div>
+          </div>
+          <table class="records">
+            <caption class="sr-only" style="position:absolute;left:-9999px">Certificates of Team Cloud with their status and expiry</caption>
+            <thead><tr><th scope="col">Person</th><th scope="col">Course</th><th scope="col">Status</th><th scope="col">Expiry</th></tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+          <p class="callout" id="callout" role="status" aria-live="polite"></p>
+        </div>
+
+        <aside class="panel overview" aria-labelledby="ov-title">
+          <h2 id="ov-title">Team overview</h2>
+          <dl class="kpis">
+            <div><dt>Still valid</dt><dd id="k-valid">–</dd></div>
+            <div><dt>Expiring ≤ 60 d</dt><dd id="k-soon">–</dd></div>
+            <div><dt>Expired</dt><dd id="k-expired">–</dd></div>
+            <div><dt>Studying</dt><dd id="k-study">–</dd></div>
+          </dl>
+          <div class="legend" aria-label="Expiry badges">
+            <span class="badge b-active"><svg aria-hidden="true"><use href="#i-check-circle"/></svg>Active</span>
+            <span class="badge b-60"><svg aria-hidden="true"><use href="#i-clock"/></svg>Expiring in 60 days</span>
+            <span class="badge b-soon"><svg aria-hidden="true"><use href="#i-alert"/></svg>Expiring soon</span>
+            <span class="badge b-expired"><svg aria-hidden="true"><use href="#i-x-circle"/></svg>Expired</span>
+            <span class="badge b-none"><svg aria-hidden="true"><use href="#i-infinity"/></svg>No expiry</span>
+          </div>
+          <p class="note">Every badge has a word and an icon, not just a colour.</p>
+        </aside>
+      </div>
+      <noscript><p class="muted" style="margin-top:16px">The interactive team preview needs JavaScript.</p></noscript>
+    </div>
+  </header>
+
+  <section class="block" id="problem" aria-labelledby="problem-title">
+    <div class="wrap">
+      <p class="eyebrow">The problem</p>
+      <h2 class="title" id="problem-title">A certificate spreadsheet is out of date the day after it's updated.</h2>
+      <p class="intro">Certificates are earned, renewed and quietly expire. People finish a course and forget to update the sheet, statuses get typed five different ways, and the expiry date is something you work out yourself. By the time anyone notices a certificate has lapsed, it's too late to renew it on time.</p>
+      <div class="situations">
+        <article>
+          <h3>The expiry nobody saw coming</h3>
+          <p>A certificate a project relies on lapses, and the team finds out when someone asks for proof.</p>
+        </article>
+        <article>
+          <h3><span class="quote">“Can you update the sheet?”</span></h3>
+          <p>The data depends on one person chasing everyone else. It's never quite current, so nobody fully trusts it.</p>
+        </article>
+        <article>
+          <h3>The monthly report by hand</h3>
+          <p>“How many valid AWS certificates do we have?” should take a minute. Without one shared view, it means asking around and counting rows.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="solution" aria-labelledby="solution-title">
+    <div class="wrap">
+      <p class="eyebrow">The solution</p>
+      <h2 class="title" id="solution-title">One shared record, with the rules built in.</h2>
+      <p class="intro">Every person, course and certificate is a real record. Expiry is worked out for you, everyone updates their own progress with proof, and reminders arrive before it's too late.</p>
+      <div class="pillars">
+        <div>
+          <svg aria-hidden="true"><use href="#i-one"/></svg>
+          <h3>One source of truth</h3>
+          <p>Who holds which certificate, who is studying for what, and when each one expires. One place, always current.</p>
+        </div>
+        <div>
+          <svg aria-hidden="true"><use href="#i-user-pen"/></svg>
+          <h3>Everyone updates their own</h3>
+          <p>Members record their own progress and upload proof. Managers see the change straight away, without chasing anyone.</p>
+        </div>
+        <div>
+          <svg aria-hidden="true"><use href="#i-bell"/></svg>
+          <h3>Warned in time</h3>
+          <p>A Monday e-mail lists certificates expiring within 60 days, so renewals start while there's still time.</p>
+        </div>
+      </div>
+
+      <div class="rules">
+        <div class="rules-head">
+          <h3>Rules CertTracker keeps for you</h3>
+          <p>The checks a spreadsheet leaves to people's memory, done every time a record is saved.</p>
+        </div>
+        <ul>
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><b>Expiry is calculated, never typed.</b> Issue date plus the course's validity gives the expiry date and status, so it can't drift.</span></li>
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><b>One record per person per course.</b> A renewal updates the same record; there are no duplicate rows.</span></li>
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><b>Status and progress always agree.</b> “Done” means 100% with an issue date; “Not started” means 0%. Anything else can't be saved.</span></li>
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><b>No issue dates in the future.</b> A certificate can't be marked as issued on a day that hasn't happened.</span></li>
+          <li><svg aria-hidden="true"><use href="#i-check"/></svg><span><b>Proof is checked.</b> PDF, JPG, PNG or WebP up to 4 MB, recognised by its content, not by its file name.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="how" aria-labelledby="how-title">
+    <div class="wrap">
+      <p class="eyebrow">How it works</p>
+      <h2 class="title" id="how-title">From the old spreadsheet to reminders that arrive on time.</h2>
+      <p class="intro">The everyday path, in four steps. The rules do their work in the background.</p>
+      <ol class="steps">
+        <li><h3>Import</h3><p>An admin uploads the existing Excel file. CertTracker cleans it, shows what will be created, updated or skipped, and imports it in one step.</p></li>
+        <li><h3>Update</h3><p>Members add new certificates, track their progress and attach proof. Managers can do the same for their team.</p></li>
+        <li><h3>Get reminded</h3><p>Every Monday, members and managers get an e-mail about certificates that expire in the next 60 days or have just expired.</p></li>
+        <li><h3>Report</h3><p>The dashboard and a monthly e-mail give managers and admins the numbers, ready to share or export.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="block" id="inside" aria-labelledby="inside-title">
+    <div class="wrap">
+      <p class="eyebrow">What's inside</p>
+      <h2 class="title" id="inside-title">Six parts, working as one.</h2>
+      <p class="intro">People, courses and certificates live in one place, so every view shows the same picture.</p>
+      <div class="parts">
+        <article>
+          <svg aria-hidden="true"><use href="#i-records"/></svg>
+          <h3>Certificates by person</h3>
+          <p>Every certificate with its status, progress, exam date and expiry badge. Filter by team, status or expiry; changes appear live.</p>
+          <span class="where">Records</span>
+        </article>
+        <article>
+          <svg aria-hidden="true"><use href="#i-sheet"/></svg>
+          <h3>Excel import and export</h3>
+          <p>Bring the old file in with automatic clean-up and a preview before anything is saved. Export to CSV or Excel at any time.</p>
+          <span class="where">Import / Export</span>
+        </article>
+        <article>
+          <svg aria-hidden="true"><use href="#i-dashboard"/></svg>
+          <h3>Dashboard</h3>
+          <p>Active members, certificates held and still valid, what's expiring, completion rates, and breakdowns by team, certificate type and provider.</p>
+          <span class="where">Dashboard</span>
+        </article>
+        <article>
+          <svg aria-hidden="true"><use href="#i-mail"/></svg>
+          <h3>Reminders and monthly report</h3>
+          <p>A Monday reminder for anything that expires within 60 days, and a report on the first of each month. Never sent twice.</p>
+          <span class="where">E-mail</span>
+        </article>
+        <article>
+          <svg aria-hidden="true"><use href="#i-shield"/></svg>
+          <h3>Data quality check</h3>
+          <p>What needs attention: exams that are overdue, completed certificates without proof, people without a team.</p>
+          <span class="where">Data quality</span>
+        </article>
+        <article>
+          <svg aria-hidden="true"><use href="#i-building"/></svg>
+          <h3>Organisation and catalogue</h3>
+          <p>Centres, programs and teams, plus the course catalogue with certificate types, providers, levels and validity.</p>
+          <span class="where">Organisation · Courses</span>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="roles" aria-labelledby="roles-title">
+    <div class="wrap">
+      <p class="eyebrow">Who it's for</p>
+      <h2 class="title" id="roles-title">Three roles, one clear line of control.</h2>
+      <p class="intro">Everyone works from the same record. Your role decides what you can see and do.</p>
+      <div class="roles">
+        <article class="role">
+          <span class="role-badge">Admin</span>
+          <h3>Owns the record</h3>
+          <p class="for">Training or operations leads</p>
+          <ul>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Set up centres, programs, teams and the course catalogue</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Add members and assign team managers</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Import the old spreadsheet and export data</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>See everything, including data-quality checks and e-mail history</li>
+          </ul>
+        </article>
+        <article class="role">
+          <span class="role-badge">Manager</span>
+          <h3>Keeps the team certified</h3>
+          <p class="for">Team and project leads</p>
+          <ul>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>See every certificate in the teams they manage</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Get the Monday reminder for their teams and the monthly report</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Update records for their team members</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>See the team breakdown and personal ranking on the dashboard</li>
+          </ul>
+        </article>
+        <article class="role">
+          <span class="role-badge">Member</span>
+          <h3>Keeps their own certificates current</h3>
+          <p class="for">Everyone on the team</p>
+          <ul>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Add certificates and track study progress</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Upload proof for each certificate</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>Get a reminder before their own certificates expire</li>
+            <li><svg aria-hidden="true"><use href="#i-check"/></svg>See organisation-wide totals, never other people's details</li>
+          </ul>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="data" aria-labelledby="data-title">
+    <div class="wrap">
+      <p class="eyebrow">Your data</p>
+      <h2 class="title" id="data-title">People see what their role allows. Nothing more.</h2>
+      <p class="intro">Certificate records and proof files are personal, so access is enforced where the data lives, not just in the screens.</p>
+      <dl class="data">
+        <div><dt>Access</dt><dd>Role-based and enforced in the database. Members see only their own records; managers see only the teams they manage.</dd></div>
+        <div><dt>Proof files</dt><dd>Private storage. Files open only through short-lived links, after a permission check.</dd></div>
+        <div><dt>Accounts</dt><dd>No public sign-up. An admin creates every account.</dd></div>
+        <div><dt>Totals</dt><dd>Organisation-wide numbers are shown without names, and small groups are hidden from members.</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="block" id="next" aria-labelledby="next-title">
+    <div class="wrap">
+      <p class="eyebrow">Coming next</p>
+      <h2 class="title" id="next-title">What we'd build next, with what CertTracker already knows.</h2>
+      <p class="intro">Nothing in this section is built yet. Each idea uses data CertTracker already keeps: courses, certificates, exam dates and progress. The pilot decides the order.</p>
+      <div class="next-groups">
+        <section class="next-group" aria-labelledby="next-a">
+          <header><h3 id="next-a">Planned next</h3><span class="tag">Not built yet</span></header>
+          <ul>
+            <li><b>Recommended courses</b><span>Admins and managers recommend courses for a skill the company is investing in, such as Rust. Members add one to their plan in a click.</span></li>
+            <li><b>Team goals</b><span>Set a goal like “five people certified in Rust by Q1” and follow it on the dashboard and in the Monday e-mail.</span></li>
+            <li><b>Exam and progress reminders</b><span>A reminder before each planned exam, and a nudge when progress hasn't moved for a few weeks.</span></li>
+            <li><b>Find people by skill</b><span>Tag courses with skills, then see who holds a valid certificate, or is studying, for the skill a project needs.</span></li>
+          </ul>
+        </section>
+        <section class="next-group" aria-labelledby="next-b">
+          <header><h3 id="next-b">Exploring with AI</h3><span class="tag">After the pilot</span></header>
+          <ul>
+            <li><b>Scan a certificate</b><span>Upload a photo or PDF and the form fills itself. You check it before anything is saved.</span></li>
+            <li><b>Match a project to people</b><span>Paste a project's requirements and get a shortlist of people with valid certificates, with the reasons.</span></li>
+            <li><b>Ask in plain words</b><span>“Who has a valid Azure certificate?” The answer uses only what you're allowed to see.</span></li>
+          </ul>
+          <p class="safety"><svg aria-hidden="true"><use href="#i-lock"/></svg>AI would only read data you're allowed to see, never make up numbers, and ask before changing anything.</p>
+        </section>
+      </div>
+      <p class="ask">Which one would you use first? <span>Tell the CertTracker team <a href="https://teams.microsoft.com/l/chat/0/0?users=duonghung17122004@gmail.com" target="_blank" rel="noopener">on Microsoft Teams</a>.</span></p>
+    </div>
+  </section>
+
+  <section class="closing" aria-labelledby="closing-title">
+    <div class="wrap">
+      <h2 id="closing-title">Every certificate current. Every expiry on time.</h2>
+      <p>Know who holds what, what's about to expire, and what still needs proof, without chasing a spreadsheet.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="https://cert-tracker-three.vercel.app" target="_blank" rel="noopener" data-app-link>Open CertTracker</a>
+        <span class="pill">In development · early access</span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>CertTracker · Every certificate, before it expires.</span>
+    <span>Names and data on this page are sample data.</span>
+  </div>
+</footer>
+
+<script>
+  // Sample team. "Today" is fixed so the page reads the same for everyone.
+  const TODAY = new Date(Date.UTC(2026, 9, 27));
+  const DAY = 86400000;
+  const people = [
+    { name: "Duong Quoc Hung", code: "M001", course: "AWS Solutions Architect – Associate", provider: "AWS", status: "done", expires: "2026-11-21" },
+    { name: "Bui Thi Ngoc Tram", code: "M002", course: "Azure Administrator (AZ-104)", provider: "Microsoft", status: "done", expires: "2026-12-10" },
+    { name: "Tran Thi Ngoc Minh", code: "M003", course: "Certified Kubernetes Administrator", provider: "CNCF", status: "done", expires: "2026-10-20" },
+    { name: "Vo Thi Hoa", code: "M004", course: "Associate Cloud Engineer", provider: "Google Cloud", status: "done", expires: "2027-02-15" },
+    { name: "Tran Thi Binh", code: "M005", course: "AWS Developer – Associate", provider: "AWS", status: "progress", progress: 40, exam: "2026-11-16" },
+    { name: "Le Minh Chau", code: "M006", course: "Rust Fundamentals", provider: "Online course", status: "progress", progress: 60, noExpiry: true },
+  ];
+
+  const BADGE = {
+    active: ["b-active", "i-check-circle", "Active"],
+    in60: ["b-60", "i-clock", "Expiring in 60 days"],
+    soon: ["b-soon", "i-alert", "Expiring soon"],
+    expired: ["b-expired", "i-x-circle", "Expired"],
+    none: ["b-none", "i-infinity", "No expiry"],
+  };
+  const fmt = (iso) => { const [y, m, d] = iso.split("-"); return `${d}/${m}/${y}`; };
+  const initials = (n) => n.split(" ").slice(-1)[0].slice(0, 1) + n.split(" ")[0].slice(0, 1);
+
+  function expiryOf(p, now) {
+    if (p.status !== "done") return p.noExpiry ? { key: "none" } : null;
+    const days = Math.round((Date.parse(p.expires) - now) / DAY);
+    // Same thresholds as the app: ≤ 30 days soon, 31–60 days, more than 60 active.
+    const key = days < 0 ? "expired" : days <= 30 ? "soon" : days <= 60 ? "in60" : "active";
+    return { key, days };
+  }
+  const badge = (key, title) => {
+    const [cls, icon, label] = BADGE[key];
+    return `<span class="badge ${cls}"${title ? ` title="${title}"` : ""}><svg aria-hidden="true"><use href="#${icon}"/></svg>${label}</span>`;
+  };
+
+  const rows = document.getElementById("rows");
+  const out = document.getElementById("ahead-out");
+  const callout = document.getElementById("callout");
+
+  function render(offset) {
+    const now = TODAY.getTime() + offset * DAY;
+    out.textContent = offset === 0 ? "Today" : `+${offset} days · ${fmt(new Date(now).toISOString().slice(0, 10))}`;
+    let valid = 0, soon = 0, expired = 0, study = 0;
+
+    rows.innerHTML = people.map((p) => {
+      const e = expiryOf(p, now);
+      let state, expiry;
+      if (p.status === "done") {
+        state = `<span class="state"><svg width="16" height="16" aria-hidden="true" style="color:var(--status-active-fg)"><use href="#i-check-circle"/></svg>Done</span>`;
+        const detail = e.days < 0 ? `Expired ${-e.days} days ago` : `${e.days} days left`;
+        expiry = `${badge(e.key)}<span class="days">${detail}</span>`;
+        if (e.key !== "expired") valid++;
+        if (e.key === "soon" || e.key === "in60") soon++;
+        if (e.key === "expired") expired++;
+      } else {
+        study++;
+        state = `<span class="progress"><svg width="16" height="16" aria-hidden="true"><use href="#i-loader"/></svg><span class="bar"><i style="width:${p.progress}%"></i></span>${p.progress}%</span>`;
+        expiry = p.noExpiry ? badge("none") : `<span class="days">Exam on ${fmt(p.exam)}</span>`;
+      }
+      return `<tr data-code="${p.code}">
+        <td class="c-who"><div class="who"><span class="avatar" aria-hidden="true">${initials(p.name)}</span><div><b>${p.name}</b><span class="code">${p.code}</span></div></div></td>
+        <td class="c-course"><div class="course">${p.course}<small>${p.provider}</small></div></td>
+        <td class="c-state">${state}</td>
+        <td class="c-expiry">${expiry}</td></tr>`;
+    }).join("");
+
+    // The most urgent certificate that is about to lapse (or already has) gets the callout.
+    const lapsing = people
+      .map((p) => ({ p, e: expiryOf(p, now) }))
+      .filter((x) => x.p.status === "done" && x.e.key !== "active")
+      .sort((a, b) => (a.e.days >= 0 ? a.e.days : 1e6 + a.e.days) - (b.e.days >= 0 ? b.e.days : 1e6 + b.e.days));
+    const first = lapsing.find((x) => x.e.days >= 0) || lapsing[0];
+    if (first) {
+      const firstName = first.p.name.split(" ").slice(-1)[0];
+      rows.querySelector(`tr[data-code="${first.p.code}"]`).classList.add("is-focus");
+      callout.className = "callout";
+      const who = `<b>${firstName}'s ${first.p.course}</b>`;
+      const when = offset === 0 ? "" : "By then, ";
+      callout.innerHTML = `<svg aria-hidden="true"><use href="#i-bell"/></svg><span>` + (first.e.days >= 0
+        ? `${when}${who} ${offset === 0 ? "expires" : "has"} ${offset === 0 ? `in ${first.e.days} days` : `${first.e.days} days left`}. It's in ${offset === 0 ? "this Monday's" : "that week's Monday"} reminder${first.e.days <= 30 ? ", so the renewal should start now" : ", with time to plan the renewal"}.`
+        : offset === 0
+          ? `${who} expired ${-first.e.days} days ago. It stays in reminders and on the dashboard until it's renewed.`
+          : `By then, ${expired === valid + expired ? "all" : expired} of the team's ${valid + expired} certificates have expired, unless they're renewed first.`) + `</span>`;
+    } else {
+      callout.className = "callout ok";
+      callout.innerHTML = `<svg aria-hidden="true"><use href="#i-check-circle"/></svg><span>Nothing in this team expires within 60 days.</span>`;
+    }
+    document.getElementById("k-valid").textContent = valid;
+    document.getElementById("k-soon").textContent = soon;
+    document.getElementById("k-expired").textContent = expired;
+    document.getElementById("k-study").textContent = study;
+  }
+
+  const slider = document.getElementById("ahead");
+  slider.addEventListener("input", () => render(Number(slider.value)));
+  render(0);
+</script>
+</body>
+</html>

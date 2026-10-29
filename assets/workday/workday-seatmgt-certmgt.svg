@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 652 440" width="652" height="440">
-  <title>SeatMGT and CertMGT – keep things in order</title>
+  <title>SeatMGT and CertTracker – keep things in order</title>
   <g stroke="#1A2442" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
     <rect width="652" height="440" rx="52" fill="#D5F3E6" stroke="none"/>
     <circle cx="560" cy="380" r="100" fill="#E6F8EF" stroke="none"/>
@@ -32,7 +32,7 @@
     <path d="M158 160s-20-18-20-34a20 20 0 0140 0c0 16-20 34-20 34z" fill="#5B9BF0" transform="translate(0,-6)"/>
     <circle cx="158" cy="120" r="7" fill="#FFFFFF"/>
 
-    <!-- CertMGT: certificate card (tilted) -->
+    <!-- CertTracker: certificate card (tilted) -->
     <g transform="rotate(5 490 200)">
       <rect x="398" y="92" width="200" height="236" rx="26" fill="#1A2442" stroke="none"/>
       <rect x="390" y="84" width="200" height="236" rx="26" fill="#FFFFFF"/>

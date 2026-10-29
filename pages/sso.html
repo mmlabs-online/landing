@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SSO R&amp;D with Keycloak</title>
+<meta name="description" content="An R&amp;D project to give the team single sign-on with a self-hosted Keycloak: one account, one MFA setup, every mmlabs app.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #0066CC;
+    --brand-strong: #0052A3;
+    --on-brand: #FFFFFF;
+    --on-brand-soft: #D3E5F8;
+    --ink: #14233A;
+    --muted: #55657C;
+    --paper: #FFFFFF;
+    --paper-alt: #F3F7FC;
+    --tint: #E5EFFA;
+    --line: #D6E0EC;
+    --accent-text: #0066CC;
+    --card-bg: #FFFFFF;
+    --card-ink: #14233A;
+    --card-muted: #607089;
+    --shadow: 0 10px 30px rgba(10, 40, 80, 0.18);
+    --c1: #0D9488;  /* CaleChip */
+    --c2: #D97706;  /* Ricotdin */
+    --c3: #7C3AED;  /* SeatMGT */
+    --c4: #16A34A;  /* CertTracker */
+    --ok: #16A34A;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --brand-strong: #0A4F9A;
+      --ink: #E4ECF6;
+      --muted: #9AAAC0;
+      --paper: #0F1825;
+      --paper-alt: #142134;
+      --tint: #17304F;
+      --line: #263850;
+      --accent-text: #6FB0F2;
+      --card-bg: #12213A;
+      --card-ink: #E4ECF6;
+      --card-muted: #A3B3C9;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+      --ok: #4ADE80;
+      color-scheme: dark;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 1.0625rem; line-height: 1.6;
+    color: var(--ink); background: var(--paper);
+  }
+  a { color: var(--accent-text); }
+  :focus-visible { outline: 3px solid var(--accent-text); outline-offset: 3px; border-radius: 6px; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 0 28px; }
+  button { font: inherit; cursor: pointer; }
+
+  /* Nav */
+  .nav { position: sticky; top: 0; z-index: 20; background: var(--paper); border-bottom: 1px solid var(--line); }
+  .nav .wrap { display: flex; align-items: center; justify-content: space-between; gap: 24px; height: 60px; }
+  .brand { font-weight: 800; color: var(--ink); text-decoration: none; letter-spacing: -0.01em; display: flex; align-items: center; gap: 10px; }
+  .brand-mark { width: 26px; height: 26px; border-radius: 7px; background: var(--brand); display: grid; place-items: center; }
+  .brand-mark svg { width: 15px; height: 15px; color: #fff; }
+  .nav ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 22px; }
+  .nav ul a { color: var(--muted); text-decoration: none; font-size: 0.95rem; font-weight: 500; padding: 4px 0; border-bottom: 2px solid transparent; transition: color .2s, border-color .2s; }
+  .nav ul a:hover, .nav ul a[aria-current="true"] { color: var(--ink); border-bottom-color: var(--brand); }
+  .progress { position: absolute; left: 0; bottom: -1px; height: 3px; width: 0; background: linear-gradient(90deg, #00499A, #0066CC, #3FA9FF); }
+
+  /* Hero */
+  .hero {
+    position: relative; color: var(--on-brand); overflow: hidden; isolation: isolate;
+    background:
+      radial-gradient(900px 520px at 88% 8%, rgba(96, 182, 255, 0.55), transparent 62%),
+      radial-gradient(760px 520px at 0% 110%, rgba(0, 34, 96, 0.7), transparent 60%),
+      linear-gradient(120deg, #00499A 0%, #0066CC 42%, #1A7FE6 72%, #2E95F5 100%);
+  }
+  .hero::before, .hero::after {
+    content: ""; position: absolute; z-index: -1; pointer-events: none;
+    border-radius: 50%; filter: blur(60px); opacity: 0.55;
+  }
+  .hero::before { width: 420px; height: 420px; left: 34%; top: -160px; background: #3FA9FF; animation: drift 14s ease-in-out infinite alternate; }
+  .hero::after { width: 360px; height: 360px; right: -80px; bottom: -180px; background: #0040A0; animation: drift 18s ease-in-out infinite alternate-reverse; }
+  @keyframes drift { from { transform: translate(0, 0); } to { transform: translate(60px, 40px); } }
+  .hero .bands { position: absolute; inset: 0; z-index: -1; pointer-events: none;
+    background: repeating-linear-gradient(115deg, rgba(255,255,255,0.045) 0 2px, transparent 2px 140px); }
+  .hero .wrap { display: grid; grid-template-columns: 1fr 1.05fr; gap: 40px; align-items: center; padding-top: 64px; padding-bottom: 72px; }
+  .hero h1 { margin: 0 0 20px; font-size: clamp(2.4rem, 5vw, 3.7rem); line-height: 1.04; font-weight: 800; letter-spacing: -0.03em; max-width: 13ch; text-wrap: balance; }
+  .hero p { margin: 0 0 22px; font-size: 1.2rem; line-height: 1.5; color: var(--on-brand-soft); max-width: 36ch; }
+  .status { display: inline-flex; align-items: center; gap: 10px; padding: 7px 14px; border: 1px solid rgba(255,255,255,0.5); border-radius: 999px; font-size: 0.92rem; }
+  .status .dot { width: 9px; height: 9px; border-radius: 50%; background: #FFD166; box-shadow: 0 0 0 0 rgba(255,209,102,0.7); animation: ping 2s infinite; }
+  @keyframes ping { 0% { box-shadow: 0 0 0 0 rgba(255,209,102,0.7); } 70% { box-shadow: 0 0 0 10px rgba(255,209,102,0); } 100% { box-shadow: 0 0 0 0 rgba(255,209,102,0); } }
+  .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 10px; font-weight: 700; text-decoration: none; border: 0; transition: transform .15s, background .2s; }
+  .btn:active { transform: translateY(1px); }
+  .btn-light { background: #fff; color: var(--brand); }
+  .btn-light:hover { background: #EAF3FD; }
+  .btn-ghost { background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.45); }
+  .btn-ghost:hover { background: rgba(255,255,255,0.2); }
+
+  /* Hero diagram */
+  .orbit { position: relative; width: 100%; max-width: 520px; aspect-ratio: 1 / 0.92; margin-left: auto; }
+  .orbit svg.links { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .link { stroke: rgba(255,255,255,0.35); stroke-width: 2; stroke-dasharray: 6 7; fill: none; vector-effect: non-scaling-stroke; transition: stroke .4s; }
+  .link.on { stroke: var(--lc); animation: flow 1.2s linear infinite; stroke-width: 3; }
+  @keyframes flow { to { stroke-dashoffset: -26; } }
+  .hub {
+    position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+    width: clamp(112px, 27%, 148px); height: clamp(112px, 27%, 148px); border-radius: 50%;
+    background: #fff; color: var(--brand); display: grid; place-items: center; text-align: center;
+    box-shadow: 0 0 0 10px rgba(255,255,255,0.14), var(--shadow); z-index: 2;
+  }
+  .hub.pulse { animation: hubpulse 1.4s ease-out 1; }
+  @keyframes hubpulse { 0% { box-shadow: 0 0 0 10px rgba(255,255,255,0.14), var(--shadow); } 50% { box-shadow: 0 0 0 26px rgba(255,255,255,0.05), var(--shadow); } 100% { box-shadow: 0 0 0 10px rgba(255,255,255,0.14), var(--shadow); } }
+  .hub svg { width: 34px; height: 34px; display: block; margin: 0 auto 6px; }
+  .hub b { display: block; font-size: clamp(0.8rem, 1.4vw, 1rem); color: #0B2A4F; }
+  .hub small { display: block; font-size: clamp(0.62rem, 1vw, 0.74rem); color: #4A6585; }
+
+  .app {
+    position: absolute; width: 41%; padding: 14px; border-radius: 16px;
+    background: var(--card-bg); color: var(--card-ink); text-decoration: none;
+    box-shadow: var(--shadow); border-top: 5px solid var(--c); z-index: 3;
+    transition: transform .25s, box-shadow .25s; display: grid; gap: 10px;
+  }
+  .app:hover { transform: translateY(-4px) scale(1.02); }
+  .app-1 { left: 0; top: 0; --c: var(--c1); }
+  .app-2 { right: 0; top: 0; --c: var(--c2); }
+  .app-3 { left: 0; bottom: 0; --c: var(--c3); }
+  .app-4 { right: 0; bottom: 0; --c: var(--c4); }
+  .app-head { display: flex; align-items: center; gap: 10px; }
+  .app-icon { flex: none; width: 38px; height: 38px; border-radius: 10px; background: var(--c); display: grid; place-items: center; }
+  .app-icon svg { width: 20px; height: 20px; color: #fff; }
+  .app-name { font-weight: 800; font-size: 1.02rem; letter-spacing: -0.01em; }
+  .app-desc { font-size: 0.78rem; color: var(--card-muted); line-height: 1.3; }
+  .pill { justify-self: start; display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: color-mix(in srgb, var(--card-muted) 16%, transparent); color: var(--card-muted); transition: background .3s, color .3s; }
+  .pill svg { width: 12px; height: 12px; }
+  .app.on .pill { background: color-mix(in srgb, var(--c) 18%, transparent); color: var(--c); }
+  @media (prefers-color-scheme: dark) { .app.on .pill { color: color-mix(in srgb, var(--c) 55%, white); } }
+  .pill .check { display: none; }
+  .app.on .pill .check { display: inline; }
+  .app.on .pill .lock { display: none; }
+
+  .methods { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin-top: 18px; max-width: 520px; margin-left: auto; font-size: 0.85rem; color: var(--on-brand-soft); align-items: center; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: rgba(255,255,255,0.14); color: #fff; font-weight: 600; }
+  .chip svg { width: 14px; height: 14px; }
+
+  /* Sections */
+  section { padding: 84px 0; border-bottom: 1px solid var(--line); }
+  section:nth-of-type(even) { background: var(--paper-alt); }
+  .split { display: grid; grid-template-columns: 250px 1fr; gap: 48px; }
+  .split > header h2 { margin: 0; font-size: 2rem; line-height: 1.15; font-weight: 800; letter-spacing: -0.02em; }
+  .split > header p { margin: 10px 0 0; color: var(--muted); font-size: 0.98rem; max-width: 26ch; }
+  .split.stack { grid-template-columns: 1fr; gap: 28px; }
+  .split.stack > header p { max-width: none; }
+  .lead { margin: 0 0 32px; font-size: 1.25rem; line-height: 1.55; max-width: 62ch; }
+
+  .facts { margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); border-top: 2px solid var(--brand); }
+  .facts div { padding: 18px 20px 18px 0; border-bottom: 1px solid var(--line); }
+  .facts dt { font-size: 0.9rem; color: var(--muted); margin-bottom: 4px; }
+  .facts dd { margin: 0; font-weight: 700; }
+  .facts .later { display: block; margin-top: 4px; font-size: 0.85rem; font-weight: 500; color: var(--muted); }
+
+  /* Problem cards */
+  .problems { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .prob { --pc: #E11D48; background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 22px; display: flex; flex-direction: column; gap: 10px; transition: transform .25s, box-shadow .25s, border-color .25s; }
+  .prob:nth-child(2) { --pc: #D97706; } .prob:nth-child(3) { --pc: #EA580C; }
+  .prob:hover { transform: translateY(-4px); box-shadow: var(--shadow); border-color: color-mix(in srgb, var(--pc) 45%, var(--line)); }
+  .prob-icon { width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center; background: color-mix(in srgb, var(--pc) 14%, transparent); color: var(--pc); }
+  .prob-icon svg { width: 24px; height: 24px; }
+  .prob h3 { margin: 4px 0 0; font-size: 1.15rem; font-weight: 800; }
+  .prob p { margin: 0; color: var(--muted); font-size: 0.98rem; }
+  .viz { margin-top: auto; padding-top: 12px; display: grid; gap: 6px; }
+  .viz-row { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-radius: 8px; background: var(--paper-alt); font-size: 0.82rem; color: var(--muted); }
+  .viz-row .d { flex: none; width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
+  .viz-row .dots { letter-spacing: 2px; color: var(--ink); }
+  .viz-row .tag { margin-left: auto; padding: 1px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; background: color-mix(in srgb, var(--pc) 15%, transparent); color: var(--pc); }
+  .viz-row.bad { outline: 1.5px dashed color-mix(in srgb, var(--pc) 60%, transparent); background: color-mix(in srgb, var(--pc) 6%, var(--paper-alt)); }
+  .shields { display: flex; gap: 10px; align-items: center; }
+  .shields svg { width: 46px; height: 46px; }
+  .viz-cap { font-size: 0.8rem; color: var(--muted); }
+  .box { flex: none; width: 16px; height: 16px; border-radius: 4px; display: grid; place-items: center; background: var(--brand); color: #fff; }
+  .box svg { width: 11px; height: 11px; }
+  .box.empty { background: transparent; border: 2px solid var(--pc); }
+  @media (prefers-color-scheme: dark) { .prob .tag, .prob-icon { color: color-mix(in srgb, var(--pc) 70%, white); } }
+
+  /* Feature blocks */
+  .features { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .feature { position: relative; padding: 24px 22px; border-radius: 16px; background: var(--paper); border: 1px solid var(--line); overflow: hidden; transition: transform .25s, box-shadow .25s, border-color .25s; }
+  .feature::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 4px; background: linear-gradient(90deg, #00499A, #0066CC, #3FA9FF); transform: scaleX(0); transform-origin: left; transition: transform .35s ease; }
+  .feature:hover { transform: translateY(-6px); box-shadow: var(--shadow); border-color: color-mix(in srgb, var(--brand) 40%, var(--line)); }
+  .feature:hover::before { transform: scaleX(1); }
+  .f-icon { width: 48px; height: 48px; border-radius: 13px; display: grid; place-items: center; background: var(--tint); color: var(--accent-text); margin-bottom: 16px; transition: background .25s, color .25s, transform .25s; }
+  .f-icon svg { width: 24px; height: 24px; }
+  .feature:hover .f-icon { background: linear-gradient(135deg, #0052A3, #2E95F5); color: #fff; transform: rotate(-6deg) scale(1.05); }
+  .feature h3 { margin: 0 0 6px; font-size: 1.1rem; font-weight: 800; }
+  .feature p { margin: 0; color: var(--muted); font-size: 0.97rem; }
+
+  /* Steps */
+  .steps { list-style: none; margin: 0 0 56px; padding: 0; counter-reset: step; }
+  .steps li { counter-increment: step; position: relative; padding: 0 0 26px 64px; max-width: 64ch; transition: opacity .3s; }
+  .steps li::before {
+    content: counter(step); position: absolute; left: 0; top: 0; width: 40px; height: 40px; border-radius: 50%;
+    background: var(--tint); color: var(--accent-text); display: grid; place-items: center; font-weight: 800;
+    transition: background .3s, color .3s, transform .3s;
+  }
+  .steps li:not(:last-child)::after { content: ""; position: absolute; left: 19px; top: 44px; bottom: 4px; width: 2px; background: var(--line); }
+  .steps li.active::before, .steps li.done::before { background: var(--brand); color: #fff; }
+  .steps li.active::before { transform: scale(1.12); }
+  .steps h3 { margin: 6px 0 4px; font-size: 1.15rem; font-weight: 700; }
+  .steps p { margin: 0; color: var(--muted); }
+
+  /* Demo */
+  .demo { border: 1px solid var(--line); border-radius: 18px; background: var(--paper); overflow: hidden; }
+  .demo-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; border-bottom: 1px solid var(--line); background: var(--paper-alt); }
+  .demo-bar h3 { margin: 0; font-size: 1.1rem; font-weight: 800; }
+  .demo-bar button { background: transparent; border: 1px solid var(--line); color: var(--ink); padding: 6px 12px; border-radius: 8px; font-size: 0.9rem; font-weight: 600; }
+  .demo-bar button:hover { border-color: var(--brand); }
+  .demo-body { display: grid; grid-template-columns: 300px 1fr; gap: 0; }
+  .login { padding: 22px; border-right: 1px solid var(--line); transition: box-shadow .3s; }
+  .login.attention { box-shadow: inset 0 0 0 3px var(--brand); }
+  .login h4 { margin: 0 0 2px; font-size: 1.05rem; }
+  .login .sub { margin: 0 0 16px; font-size: 0.88rem; color: var(--muted); }
+  .seg { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 14px; }
+  .seg button { padding: 8px 6px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--ink); font-size: 0.84rem; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .seg button svg { width: 16px; height: 16px; }
+  .seg button[aria-pressed="true"] { border-color: var(--brand); background: var(--tint); color: var(--accent-text); }
+  .field { display: block; padding: 9px 12px; border: 1px solid var(--line); border-radius: 8px; font-size: 0.9rem; color: var(--muted); margin-bottom: 8px; background: var(--paper-alt); }
+  .field b { color: var(--ink); font-weight: 600; }
+  .ext-note { font-size: 0.9rem; color: var(--muted); padding: 10px 12px; background: var(--paper-alt); border-radius: 8px; margin-bottom: 8px; }
+  .signin { width: 100%; margin-top: 6px; padding: 11px; border-radius: 9px; border: 0; background: linear-gradient(120deg, #00499A, #0066CC 50%, #2E95F5); color: #fff; font-weight: 800; transition: background .2s; }
+  .signin:hover { filter: brightness(1.08); }
+  .signin:disabled { opacity: 0.55; cursor: default; }
+
+  .apps-panel { padding: 22px; display: grid; gap: 16px; align-content: start; }
+  .now { min-height: 3em; padding: 12px 14px; border-radius: 10px; background: var(--tint); font-size: 0.95rem; }
+  .now b { color: var(--accent-text); }
+  .tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .tile { text-align: left; padding: 14px; border-radius: 12px; border: 1px solid var(--line); border-left: 5px solid var(--c); background: var(--paper); color: var(--ink); display: grid; gap: 8px; transition: transform .2s, background .3s; }
+  .tile:hover { transform: translateY(-2px); }
+  .tile .app-head { gap: 10px; }
+  .tile .app-icon { width: 32px; height: 32px; border-radius: 8px; }
+  .tile .app-icon svg { width: 17px; height: 17px; }
+  .tile .pill { --card-muted: var(--muted); }
+  .tile.on { background: color-mix(in srgb, var(--c) 8%, var(--paper)); }
+  .tile.on .pill { background: color-mix(in srgb, var(--c) 18%, transparent); color: var(--c); }
+  @media (prefers-color-scheme: dark) { .tile.on .pill { color: color-mix(in srgb, var(--c) 55%, white); } }
+  .tile.on .pill .check { display: inline; } .tile.on .pill .lock { display: none; }
+  .tile.shake { animation: shake .4s; }
+  @keyframes shake { 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+  .t1 { --c: var(--c1); } .t2 { --c: var(--c2); } .t3 { --c: var(--c3); } .t4 { --c: var(--c4); }
+
+  .log { margin: 0; padding: 12px 14px; list-style: none; border-radius: 10px; background: #0E1A2B; border: 1px solid var(--line); color: #C9D6E8; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.78rem; line-height: 1.7; min-height: 120px; max-height: 160px; overflow: auto; }
+  .log li { opacity: 0; transform: translateY(4px); animation: in .3s forwards; }
+  .log .ev { color: #7CC4FF; font-weight: 700; }
+  .log .empty { opacity: 1; animation: none; transform: none; color: #7F8EA3; }
+  @keyframes in { to { opacity: 1; transform: none; } }
+  .log-label { font-size: 0.82rem; color: var(--muted); margin: 0 0 -10px; }
+
+  /* Conclusion */
+  .outcomes { margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .outcomes div { padding: 20px; border-radius: 14px; background: var(--paper-alt); border-top: 4px solid var(--oc); }
+  .outcomes div:nth-child(1) { --oc: var(--c1); } .outcomes div:nth-child(2) { --oc: var(--brand); } .outcomes div:nth-child(3) { --oc: var(--c3); }
+  .outcomes dt { font-weight: 800; margin-bottom: 6px; }
+  .outcomes dd { margin: 0; color: var(--muted); }
+
+  footer { padding: 24px 0 40px; color: var(--muted); font-size: 0.9rem; }
+
+  /* Reveal on scroll */
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .reveal { opacity: 1; transform: none; }
+  }
+
+  @media (max-width: 1100px) { .problems, .features { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 900px) {
+    .nav ul { display: none; }
+    .hero .wrap { grid-template-columns: 1fr; padding-top: 48px; padding-bottom: 56px; }
+    .orbit, .methods { margin-left: 0; margin-right: auto; }
+    .methods { justify-content: flex-start; }
+    .split { grid-template-columns: 1fr; gap: 24px; }
+    .facts { grid-template-columns: repeat(2, 1fr); }
+    .problems, .features, .outcomes { grid-template-columns: 1fr; }
+    .demo-body { grid-template-columns: 1fr; }
+    .login { border-right: 0; border-bottom: 1px solid var(--line); }
+    section { padding: 56px 0; }
+  }
+  @media (max-width: 520px) {
+    .facts { grid-template-columns: 1fr; }
+    .app { padding: 10px; gap: 6px; }
+    .app-desc { display: none; }
+    .app-icon { width: 30px; height: 30px; }
+    .app-name { font-size: 0.9rem; }
+    .tiles { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Icon sprites -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/><path d="M8 14h3v3H8z"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></symbol>
+  <symbol id="i-seat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v8H7z"/><path d="M5 12h14v4H5z"/><path d="M7 16v4M17 16v4"/></symbol>
+  <symbol id="i-cert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="9" r="5"/><path d="M9 13.5L7.5 21 12 18.5 16.5 21 15 13.5"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-key" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3M14 9l2 2"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="1"/><path d="M9 7h1M14 7h1M9 11h1M14 11h1M10 21v-4h4v4"/></symbol>
+  <symbol id="i-google" viewBox="0 0 24 24"><path fill="currentColor" d="M21.6 12.2c0-.7-.1-1.4-.2-2H12v3.8h5.4a4.6 4.6 0 0 1-2 3v2.5h3.2c1.9-1.7 3-4.3 3-7.3z"/><path fill="currentColor" opacity=".8" d="M12 22c2.7 0 5-.9 6.6-2.4l-3.2-2.5c-.9.6-2 1-3.4 1-2.6 0-4.8-1.8-5.6-4.1H3.1v2.6A10 10 0 0 0 12 22z"/><path fill="currentColor" opacity=".6" d="M6.4 14c-.2-.6-.3-1.3-.3-2s.1-1.4.3-2V7.4H3.1a10 10 0 0 0 0 9.2L6.4 14z"/><path fill="currentColor" opacity=".9" d="M12 5.9c1.5 0 2.8.5 3.8 1.5l2.9-2.9A10 10 0 0 0 3.1 7.4L6.4 10C7.2 7.7 9.4 5.9 12 5.9z"/></symbol>
+  <symbol id="i-github" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a10 10 0 0 0-3.2 19.5c.5.1.7-.2.7-.5v-1.7c-2.8.6-3.4-1.3-3.4-1.3-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 3 .8.1-.7.4-1.1.6-1.3-2.2-.3-4.6-1.1-4.6-5a3.9 3.9 0 0 1 1-2.7c-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.8 1a9.6 9.6 0 0 1 5 0c1.9-1.3 2.8-1 2.8-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.4 4.7-4.6 5 .4.3.7.9.7 1.9V21c0 .3.2.6.7.5A10 10 0 0 0 12 2z"/></symbol>
+</svg>
+
+<nav class="nav" aria-label="Page sections">
+  <div class="wrap">
+    <a class="brand" href="#top"><span class="brand-mark"><svg><use href="#i-key"/></svg></span>SSO R&amp;D</a>
+    <ul>
+      <li><a href="#summary">Summary</a></li>
+      <li><a href="#problem">Problem</a></li>
+      <li><a href="#what">What it does</a></li>
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#conclusion">Conclusion</a></li>
+    </ul>
+  </div>
+  <div class="progress" id="progress"></div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="bands" aria-hidden="true"></div>
+  <div class="wrap">
+    <div>
+      <h1>One sign&#8209;in for every internal app</h1>
+      <p>An R&amp;D project to give the DAS team single sign-on with Keycloak: one account, one MFA setup, four apps.</p>
+      <span class="status"><span class="dot" aria-hidden="true"></span>In progress: research and design</span>
+      <div class="hero-actions">
+        <a class="btn btn-light" href="#demo">Try the demo</a>
+        <a class="btn btn-ghost" href="#how">How it works</a>
+      </div>
+    </div>
+
+    <div>
+      <div class="orbit" role="img" aria-label="Keycloak in the center, connected to four apps: CaleChip, Ricotdin, SeatMGT and CertTracker. After one sign-in, every app shows Signed in.">
+        <svg class="links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <line class="link" data-i="1" style="--lc: #5EEAD4" x1="50" y1="50" x2="21" y2="17"/>
+          <line class="link" data-i="2" style="--lc: #FCD34D" x1="50" y1="50" x2="79" y2="17"/>
+          <line class="link" data-i="3" style="--lc: #C4B5FD" x1="50" y1="50" x2="21" y2="83"/>
+          <line class="link" data-i="4" style="--lc: #86EFAC" x1="50" y1="50" x2="79" y2="83"/>
+        </svg>
+        <div class="hub" id="hub" aria-hidden="true">
+          <div><svg><use href="#i-key"/></svg><b>Keycloak</b><small>1 sign-in</small></div>
+        </div>
+        <a class="app app-1" data-i="1" href="#demo" aria-hidden="true" tabindex="-1">
+          <span class="app-head"><span class="app-icon"><svg><use href="#i-cal"/></svg></span><span><span class="app-name">CaleChip</span></span></span>
+          <span class="pill"><svg class="lock"><use href="#i-lock"/></svg><svg class="check"><use href="#i-check"/></svg><span class="txt">Waiting</span></span>
+        </a>
+        <a class="app app-2" data-i="2" href="#demo" aria-hidden="true" tabindex="-1">
+          <span class="app-head"><span class="app-icon"><svg><use href="#i-doc"/></svg></span><span><span class="app-name">Ricotdin</span></span></span>
+          <span class="pill"><svg class="lock"><use href="#i-lock"/></svg><svg class="check"><use href="#i-check"/></svg><span class="txt">Waiting</span></span>
+        </a>
+        <a class="app app-3" data-i="3" href="#demo" aria-hidden="true" tabindex="-1">
+          <span class="app-head"><span class="app-icon"><svg><use href="#i-seat"/></svg></span><span><span class="app-name">SeatMGT</span></span></span>
+          <span class="pill"><svg class="lock"><use href="#i-lock"/></svg><svg class="check"><use href="#i-check"/></svg><span class="txt">Waiting</span></span>
+        </a>
+        <a class="app app-4" data-i="4" href="#demo" aria-hidden="true" tabindex="-1">
+          <span class="app-head"><span class="app-icon"><svg><use href="#i-cert"/></svg></span><span><span class="app-name">CertTracker</span></span></span>
+          <span class="pill"><svg class="lock"><use href="#i-lock"/></svg><svg class="check"><use href="#i-check"/></svg><span class="txt">Waiting</span></span>
+        </a>
+      </div>
+      <div class="methods">
+        Sign in with
+        <span class="chip"><svg><use href="#i-mail"/></svg>Email</span>
+        <span class="chip"><svg><use href="#i-building"/></svg>Company</span>
+        <span class="chip"><svg><use href="#i-google"/></svg>Google</span>
+        <span class="chip"><svg><use href="#i-github"/></svg>GitHub</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<section id="summary">
+  <div class="wrap split">
+    <header class="reveal">
+      <h2>Summary</h2>
+      <p>What we're testing and for whom.</p>
+    </header>
+    <div class="reveal">
+      <p class="lead">We're testing whether a self-hosted Keycloak server can give the DAS team single sign-on across four internal apps: CaleChip, Ricotdin, SeatMGT and CertTracker. People sign in once with their email, company account, Google or GitHub, confirm with multi-factor authentication (MFA), and every connected app trusts that sign-in.</p>
+      <dl class="facts">
+        <div><dt>Scope</dt><dd>DAS team, under 50 people</dd></div>
+        <div><dt>Apps</dt><dd>CaleChip, Ricotdin, SeatMGT, CertTracker</dd></div>
+        <div><dt>Identity provider</dt><dd>Keycloak, self-hosted</dd></div>
+        <div><dt>Standard</dt><dd>OpenID Connect</dd></div>
+        <div><dt>Sign-in options</dt><dd>Email, company account, Google, GitHub<span class="later">Can add later: Microsoft, GitLab, passkeys</span></dd></div>
+        <div><dt>Sign-in security</dt><dd>MFA on every sign-in<span class="later">Password plus a one-time code from an authenticator app</span></dd></div>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section id="problem">
+  <div class="wrap split stack">
+    <header class="reveal">
+      <h2>Problem</h2>
+      <p>Today, every app keeps its own accounts.</p>
+    </header>
+    <div class="problems reveal">
+      <article class="prob">
+        <span class="prob-icon"><svg><use href="#i-key"/></svg></span>
+        <h3>Too many passwords</h3>
+        <p>Each app needs its own account. Passwords get reused or forgotten, and reset requests end up with IT.</p>
+        <div class="viz" aria-hidden="true">
+          <span class="viz-row" style="--c: var(--c1)"><span class="d"></span><span class="dots">&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;</span></span>
+          <span class="viz-row" style="--c: var(--c2)"><span class="d"></span><span class="dots">&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;</span></span>
+          <span class="viz-row" style="--c: var(--c3)"><span class="d"></span><span class="dots">&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;</span></span>
+          <span class="viz-row bad" style="--c: var(--c4)"><span class="d"></span><span class="dots">?</span><span class="tag">Forgot</span></span>
+        </div>
+      </article>
+      <article class="prob">
+        <span class="prob-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4M12 16h.01"/></svg></span>
+        <h3>Uneven protection</h3>
+        <p>Some apps have two-step verification and some don't. Our security is only as strong as the weakest app.</p>
+        <div class="viz" aria-hidden="true">
+          <div class="shields">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="var(--c1)"/><path d="M8.5 12l2.5 2.5 4.5-5" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-dasharray="2.5 2"/><text x="12" y="15.5" text-anchor="middle" font-size="9" font-weight="700" fill="var(--muted)">?</text></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="var(--c3)"/><path d="M8.5 12l2.5 2.5 4.5-5" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="none" stroke="var(--muted)" stroke-width="1.6" stroke-dasharray="2.5 2"/><text x="12" y="15.5" text-anchor="middle" font-size="9" font-weight="700" fill="var(--muted)">?</text></svg>
+          </div>
+          <span class="viz-cap">MFA on some apps, not others</span>
+        </div>
+      </article>
+      <article class="prob">
+        <span class="prob-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="4"/><path d="M3 21v-1a6 6 0 0 1 9.5-4.9"/><path d="M16 16l5 5M21 16l-5 5"/></svg></span>
+        <h3>Slow, manual offboarding</h3>
+        <p>When someone leaves or changes teams, access has to be removed app by app, and it's easy to miss one.</p>
+        <div class="viz" aria-hidden="true">
+          <span class="viz-row" style="--c: var(--c1)"><span class="box"><svg><use href="#i-check"/></svg></span><span class="d"></span>Access removed</span>
+          <span class="viz-row" style="--c: var(--c2)"><span class="box"><svg><use href="#i-check"/></svg></span><span class="d"></span>Access removed</span>
+          <span class="viz-row" style="--c: var(--c3)"><span class="box"><svg><use href="#i-check"/></svg></span><span class="d"></span>Access removed</span>
+          <span class="viz-row bad" style="--c: var(--c4)"><span class="box empty"></span><span class="d"></span>Still active<span class="tag">Missed</span></span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section id="what">
+  <div class="wrap split stack">
+    <header class="reveal">
+      <h2>What it does</h2>
+      <p>What changes for the team.</p>
+    </header>
+    <ul class="features reveal">
+      <li class="feature"><span class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg></span><h3>Sign in once</h3><p>After your first sign-in of the day, every connected app opens without asking again. Apps never see your password.</p></li>
+      <li class="feature"><span class="f-icon"><svg aria-hidden="true"><use href="#i-mail"/></svg></span><h3>Sign in your way</h3><p>Use your email or company account, or link your Google or GitHub account through Keycloak.</p></li>
+      <li class="feature"><span class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></span><h3>MFA everywhere</h3><p>Set up multi-factor authentication once in Keycloak, and it protects every app behind it.</p></li>
+      <li class="feature"><span class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M3 21v-1a6 6 0 0 1 9.5-4.9"/><path d="M16 16l5 5M21 16l-5 5"/></svg></span><h3>Remove access in one place</h3><p>Disable an account in Keycloak and it stops working across all four apps.</p></li>
+      <li class="feature"><span class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M15 15.5a5 5 0 0 1 6 4.5"/></svg></span><h3>Permissions from groups</h3><p>Put someone in the admin or viewer group, and apps give them the matching role automatically.</p></li>
+      <li class="feature"><span class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg></span><h3>One record of sign-ins</h3><p>Every sign-in, failure and admin change is logged in one place, which helps when something goes wrong.</p></li>
+    </ul>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap split">
+    <header class="reveal">
+      <h2>How it works</h2>
+      <p>What happens when you sign in. Try it in the demo below.</p>
+    </header>
+    <div>
+      <ol class="steps reveal" id="steps">
+        <li data-step="1">
+          <h3>You open an app</h3>
+          <p>Say you open CaleChip. It sees you aren't signed in and sends your browser to Keycloak.</p>
+        </li>
+        <li data-step="2">
+          <h3>You sign in at Keycloak</h3>
+          <p>Use your email or company account, or pick Google or GitHub, then confirm with MFA. Keycloak starts a session for you.</p>
+        </li>
+        <li data-step="3">
+          <h3>Keycloak vouches for you</h3>
+          <p>It sends the app a short-lived code. The app trades that code for a signed token directly with Keycloak, using OpenID Connect with PKCE.</p>
+        </li>
+        <li data-step="4">
+          <h3>The app checks the token and lets you in</h3>
+          <p>It verifies Keycloak's signature, confirms the token was issued for it, reads your groups, and starts its own session.</p>
+        </li>
+        <li data-step="5">
+          <h3>The next app opens straight away</h3>
+          <p>Open Ricotdin, SeatMGT or CertTracker next. Keycloak recognises your session, so each app gets its own token without asking again.</p>
+        </li>
+      </ol>
+
+      <div class="demo reveal" id="demo">
+        <div class="demo-bar">
+          <h3>Try it: one sign-in, four apps</h3>
+          <button type="button" id="reset">Reset</button>
+        </div>
+        <div class="demo-body">
+          <div class="login" id="login">
+            <h4>Sign in to DAS</h4>
+            <p class="sub">Keycloak sign-in page</p>
+            <div class="seg" role="group" aria-label="Sign-in method">
+              <button type="button" data-m="email" aria-pressed="true"><svg><use href="#i-mail"/></svg>Email</button>
+              <button type="button" data-m="company" aria-pressed="false"><svg><use href="#i-building"/></svg>Company</button>
+              <button type="button" data-m="google" aria-pressed="false"><svg><use href="#i-google"/></svg>Google</button>
+              <button type="button" data-m="github" aria-pressed="false"><svg><use href="#i-github"/></svg>GitHub</button>
+            </div>
+            <div id="email-fields">
+              <span class="field">Email <b>test@das.com</b></span>
+              <span class="field">Password <b>&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;</b></span>
+            </div>
+            <div id="company-fields" hidden>
+              <span class="field">Username <b>test</b></span>
+              <span class="field">Password <b>&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;</b></span>
+            </div>
+            <p class="ext-note" id="ext-note" hidden>You confirm on <span id="ext-name">Google</span>, then come back to Keycloak.</p>
+            <span class="field">One-time code <b>482 913</b></span>
+            <button type="button" class="signin" id="signin">Sign in</button>
+          </div>
+          <div class="apps-panel">
+            <div class="now" id="now" aria-live="polite">Pick an app to open, or press <b>Sign in</b>.</div>
+            <div class="tiles">
+              <button type="button" class="tile t1" data-app="CaleChip"><span class="app-head"><span class="app-icon"><svg><use href="#i-cal"/></svg></span><span class="app-name">CaleChip</span></span><span class="pill"><svg class="lock"><use href="#i-lock"/></svg><svg class="check"><use href="#i-check"/></svg><span class="txt">Signed out</span></span></button>
+              <button type="button" class="tile t2" data-app="Ricotdin"><span class="app-head"><span class="app-icon"><svg><use href="#i-doc"/></svg></span><span class="app-name">Ricotdin</span></span><span class="pill"><svg class="lock"><use href="#i-lock"/></svg><svg class="check"><use href="#i-check"/></svg><span class="txt">Signed out</span></span></button>
+              <button type="button" class="tile t3" data-app="SeatMGT"><span class="app-head"><span class="app-icon"><svg><use href="#i-seat"/></svg></span><span class="app-name">SeatMGT</span></span><span class="pill"><svg class="lock"><use href="#i-lock"/></svg><svg class="check"><use href="#i-check"/></svg><span class="txt">Signed out</span></span></button>
+              <button type="button" class="tile t4" data-app="CertTracker"><span class="app-head"><span class="app-icon"><svg><use href="#i-cert"/></svg></span><span class="app-name">CertTracker</span></span><span class="pill"><svg class="lock"><use href="#i-lock"/></svg><svg class="check"><use href="#i-check"/></svg><span class="txt">Signed out</span></span></button>
+            </div>
+            <p class="log-label">Keycloak activity</p>
+            <ul class="log" id="log"><li class="empty">No events yet</li></ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="conclusion">
+  <div class="wrap split">
+    <header class="reveal">
+      <h2>Conclusion</h2>
+      <p>What we expect, and what it asks of us.</p>
+    </header>
+    <div class="reveal">
+      <p class="lead">Keycloak gives the DAS team one secure sign-in for all four apps, with no license cost.</p>
+      <dl class="outcomes">
+        <div><dt>For the team</dt><dd>One account and one two-step setup instead of four separate logins.</dd></div>
+        <div><dt>For security</dt><dd>Two-step verification everywhere, and access removed in one place when someone leaves.</dd></div>
+        <div><dt>For us to own</dt><dd>Keeping Keycloak updated, backed up and monitored, and setting up each app carefully.</dd></div>
+      </dl>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">Internal R&amp;D proposal for the DAS team. Figures and plans may change after review.</div>
+</footer>
+
+<script>
+(() => {
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const wait = ms => new Promise(r => setTimeout(r, reduce ? 0 : ms));
+
+  /* Scroll progress */
+  const bar = document.getElementById('progress');
+  const onScroll = () => {
+    const h = document.documentElement;
+    const max = h.scrollHeight - h.clientHeight;
+    bar.style.width = (max > 0 ? (h.scrollTop / max) * 100 : 0) + '%';
+  };
+  document.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  /* Reveal + active nav */
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  }), { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  const navLinks = [...document.querySelectorAll('.nav ul a')];
+  const navIO = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) navLinks.forEach(a => a.setAttribute('aria-current', a.getAttribute('href') === '#' + e.target.id));
+  }), { rootMargin: '-45% 0px -50% 0px' });
+  document.querySelectorAll('main section').forEach(s => navIO.observe(s));
+
+  /* Hero sequence */
+  const hub = document.getElementById('hub');
+  const heroApps = [...document.querySelectorAll('.orbit .app')];
+  const links = [...document.querySelectorAll('.orbit .link')];
+  async function playHero() {
+    heroApps.forEach(a => { a.classList.remove('on'); a.querySelector('.txt').textContent = 'Waiting'; });
+    links.forEach(l => l.classList.remove('on'));
+    await wait(700);
+    hub.classList.remove('pulse'); void hub.offsetWidth; hub.classList.add('pulse');
+    await wait(600);
+    for (let i = 0; i < heroApps.length; i++) {
+      links[i].classList.add('on');
+      await wait(350);
+      heroApps[i].classList.add('on');
+      heroApps[i].querySelector('.txt').textContent = 'Signed in';
+      await wait(250);
+    }
+  }
+  playHero();
+  heroApps.forEach((a, i) => {
+    a.addEventListener('mouseenter', () => links[i].style.strokeWidth = 4);
+    a.addEventListener('mouseleave', () => links[i].style.strokeWidth = '');
+  });
+
+  /* Demo */
+  const steps = [...document.querySelectorAll('#steps li')];
+  const now = document.getElementById('now');
+  const logEl = document.getElementById('log');
+  const login = document.getElementById('login');
+  const signinBtn = document.getElementById('signin');
+  const tiles = [...document.querySelectorAll('.tile')];
+  const segBtns = [...document.querySelectorAll('.seg button')];
+  const names = { email: 'email', company: 'Company account', google: 'Google', github: 'GitHub' };
+  let method = 'email', session = false, busy = false, firstApp = 'CaleChip';
+
+  function setStep(n) {
+    steps.forEach(s => {
+      const k = +s.dataset.step;
+      s.classList.toggle('active', k === n);
+      s.classList.toggle('done', n > 0 && k < n);
+    });
+  }
+  function log(ev, text) {
+    const empty = logEl.querySelector('.empty');
+    if (empty) empty.remove();
+    const li = document.createElement('li');
+    li.innerHTML = '<span class="ev">' + ev + '</span> ' + text;
+    logEl.appendChild(li);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+  function say(html) { now.innerHTML = html; }
+  function openTile(t) {
+    t.classList.add('on');
+    t.querySelector('.txt').textContent = 'Signed in';
+  }
+
+  segBtns.forEach(b => b.addEventListener('click', () => {
+    if (busy || session) return;
+    method = b.dataset.m;
+    segBtns.forEach(x => x.setAttribute('aria-pressed', x === b));
+    const ext = method === 'google' || method === 'github';
+    document.getElementById('email-fields').hidden = method !== 'email';
+    document.getElementById('company-fields').hidden = method !== 'company';
+    document.getElementById('ext-note').hidden = !ext;
+    document.getElementById('ext-name').textContent = names[method];
+  }));
+
+  tiles.forEach(t => t.addEventListener('click', async () => {
+    if (busy) return;
+    const app = t.dataset.app;
+    if (t.classList.contains('on')) { say('<b>' + app + '</b> is already open.'); return; }
+    if (!session) {
+      firstApp = app;
+      t.classList.remove('shake'); void t.offsetWidth; t.classList.add('shake');
+      login.classList.add('attention');
+      setStep(1);
+      say('<b>' + app + '</b> sends you to Keycloak. Press <b>Sign in</b> to continue.');
+      return;
+    }
+    busy = true;
+    setStep(5);
+    say('Opening <b>' + app + '</b>. Keycloak already knows you, so no password is needed.');
+    log('CODE_TO_TOKEN', 'client=' + app.toLowerCase());
+    await wait(500);
+    openTile(t);
+    const left = tiles.filter(x => !x.classList.contains('on')).length;
+    say(left ? '<b>' + app + '</b> opened without asking for a password. Try another app.'
+             : 'All four apps are open with <b>one sign-in</b>.');
+    busy = false;
+  }));
+
+  signinBtn.addEventListener('click', async () => {
+    if (busy || session) return;
+    busy = true; signinBtn.disabled = true; login.classList.remove('attention');
+    const first = tiles.find(t => t.dataset.app === firstApp);
+    setStep(1); say('<b>' + firstApp + '</b> sends you to Keycloak.');
+    await wait(800);
+    setStep(2); say('Signing in with <b>' + names[method] + '</b>, then MFA with a one-time code.');
+    if (method === 'google' || method === 'github') log('IDENTITY_PROVIDER_LOGIN', 'provider=' + method);
+    log('LOGIN', 'user=test method=' + method + ' mfa=otp');
+    await wait(1000);
+    setStep(3); say('Keycloak sends a short-lived code. ' + firstApp + ' trades it for a signed token.');
+    log('CODE_TO_TOKEN', 'client=' + firstApp.toLowerCase() + ' pkce=S256');
+    await wait(1000);
+    setStep(4); say(firstApp + ' checks the signature and your groups.');
+    await wait(800);
+    session = true;
+    openTile(first);
+    signinBtn.textContent = 'Signed in';
+    say('<b>' + firstApp + '</b> is open. Now click another app.');
+    busy = false;
+  });
+
+  document.getElementById('reset').addEventListener('click', () => {
+    session = false; busy = false; firstApp = 'CaleChip';
+    tiles.forEach(t => { t.classList.remove('on'); t.querySelector('.txt').textContent = 'Signed out'; });
+    signinBtn.disabled = false; signinBtn.textContent = 'Sign in';
+    login.classList.remove('attention');
+    logEl.innerHTML = '<li class="empty">No events yet</li>';
+    setStep(0);
+    say('Pick an app to open, or press <b>Sign in</b>.');
+    playHero();
+  });
+})();
+</script>
+</body>
+</html>

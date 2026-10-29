@@ -144,15 +144,26 @@
       "page": "pages/contractpilot.html"
     },
     {
-      "slug": "certmgt",
-      "name": "CertMGT",
-      "category": "Certificate and skill management",
-      "tagline": "",
-      "summary": "Keep track of certifications and skills across a team.",
-      "status": "",
-      "statusNote": "",
-      "url": "https://certmgt.mmlabs.online",
-      "detail": false
+      "slug": "sso",
+      "name": "SSO with Keycloak",
+      "category": "Single sign-on",
+      "tagline": "One sign-in for every internal app.",
+      "summary": "An R&D project to give the team single sign-on with a self-hosted Keycloak: one account and one MFA setup across CaleChip, Ricotdin, SeatMGT and CertTracker, with access removed in one place.",
+      "status": "planned",
+      "statusNote": "R&D: research and design",
+      "url": "",
+      "page": "pages/sso.html"
+    },
+    {
+      "slug": "certtracker",
+      "name": "CertTracker",
+      "category": "Certificate and skill tracking",
+      "tagline": "Every certificate, before it expires.",
+      "summary": "Replaces the team's certificate spreadsheet with one shared record: everyone keeps their own certificates current with proof, managers see their teams at a glance, and expiry reminders arrive in time.",
+      "status": "in-development",
+      "statusNote": "Early access",
+      "url": "https://cert-tracker-three.vercel.app",
+      "page": "pages/certtracker.html"
     }
   ],
   "platform": {

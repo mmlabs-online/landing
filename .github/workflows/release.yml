@@ -1,0 +1,239 @@
+name: release
+
+# Cut a branch release/vX.Y.Z (or release/X.Y.Z) and push it: this builds the site image, smoke-tests
+# it, pushes mingming21400/mmlabs-site:vX.Y.Z, and opens the pull request "site vX.Y.Z" on
+# mmlabs-online/deployment that pins apps/site/release.env to that image by digest.
+# Deploy = review + merge that pull request: deploy-site.yml then runs on the home server's runner.
+# Same flow as Ricotdin's and CaleChip's release workflows; they start from a tag, this from a branch.
+#
+# A version is released once. A later push to the same branch with a new commit is refused: cut the
+# next version. Re-running a run for the same commit reuses the image it already pushed.
+#
+# NEEDS, under Settings → Secrets and variables → Actions:
+#   DOCKERHUB_USERNAME, DOCKERHUB_TOKEN   push to mingming21400/mmlabs-site
+#   DEPLOY_REPO_TOKEN                     fine-grained PAT on mmlabs-online/deployment ONLY:
+#                                         Contents + Pull requests read/write, nothing else
+
+on:
+  push:
+    branches: ["release/**"]
+
+permissions:
+  contents: read
+
+# One run per branch; a later push waits instead of cancelling a release in progress.
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  APP: site                          # folder apps/<APP>/ on the deployment repo
+  IMAGE: mingming21400/mmlabs-site   # Docker Hub repository
+  VAR: SITE_IMAGE                    # variable apps/site/compose.yml reads
+  VERSION_VAR: SITE_VERSION
+  DEPLOY_REPO: mmlabs-online/deployment
+
+jobs:
+  release:
+    name: build · smoke test · push · open deployment PR
+    runs-on: ubuntu-latest   # GitHub's runner: app code never runs on the home server
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: inputs present
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          DEPLOY_REPO_TOKEN: ${{ secrets.DEPLOY_REPO_TOKEN }}
+        run: |
+          missing=""
+          for name in DOCKERHUB_USERNAME DOCKERHUB_TOKEN DEPLOY_REPO_TOKEN; do
+            [ -n "${!name}" ] || missing="$missing $name"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Missing Actions secrets:$missing — add them under Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+          if [ "${IMAGE%%/*}" != "$DOCKERHUB_USERNAME" ]; then
+            echo "::error::IMAGE is $IMAGE but DOCKERHUB_USERNAME is another account. Change IMAGE at the top of release.yml."
+            exit 1
+          fi
+
+      # release/v1.2.0 or release/1.2.0 -> v1.2.0. deploy-site.yml accepts vX.Y[.Z][-prerelease].
+      - name: version
+        id: version
+        run: |
+          if ! [[ "$GITHUB_REF_NAME" =~ ^release/v?([0-9]+\.[0-9]+(\.[0-9]+)?(-[0-9A-Za-z.-]+)?)$ ]]; then
+            echo "::error::Branch $GITHUB_REF_NAME is not release/vX.Y.Z (e.g. release/v1.2.0). Nothing was built."
+            exit 1
+          fi
+          tag="v${BASH_REMATCH[1]}"
+          {
+            echo "tag=$tag"
+            echo "target=${IMAGE}:${tag}"
+            echo "source=${IMAGE}:sha-${GITHUB_SHA::7}"
+          } >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v4
+
+      - uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # A version tag is never moved. If :vX.Y.Z exists it must be this commit's image (a re-run).
+      - name: already released?
+        id: existing
+        env:
+          TARGET: ${{ steps.version.outputs.target }}
+          SOURCE: ${{ steps.version.outputs.source }}
+        run: |
+          if ! existing="$(docker buildx imagetools inspect "$TARGET" --format '{{.Manifest.Digest}}' 2>/dev/null)"; then
+            echo "reuse=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          mine="$(docker buildx imagetools inspect "$SOURCE" --format '{{.Manifest.Digest}}' 2>/dev/null || true)"
+          if [ "$mine" != "$existing" ]; then
+            echo "::error::$TARGET was already released from another commit. Cut the next version (e.g. a higher patch) instead of pushing to $GITHUB_REF_NAME. Nothing was built."
+            exit 1
+          fi
+          echo "$TARGET is already this commit's image ($existing): reusing it."
+          { echo "reuse=true"; echo "digest=$existing"; } >> "$GITHUB_OUTPUT"
+
+      - name: build
+        if: steps.existing.outputs.reuse != 'true'
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          load: true
+          push: false
+          provenance: false
+          tags: |
+            ${{ steps.version.outputs.target }}
+            ${{ steps.version.outputs.source }}
+          labels: |
+            org.opencontainers.image.version=${{ steps.version.outputs.tag }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: smoke test
+        if: steps.existing.outputs.reuse != 'true'
+        env:
+          TARGET: ${{ steps.version.outputs.target }}
+        run: |
+          docker run -d --name smoke -p 3000:3000 "$TARGET"
+          ok=""
+          for i in $(seq 1 30); do
+            if [ "$(curl -fsS http://127.0.0.1:3000/healthz 2>/dev/null)" = "ok" ]; then ok=1; break; fi
+            sleep 1
+          done
+          if [ -z "$ok" ]; then
+            echo "::error::Smoke test failed: /healthz did not answer ok within 30s."
+            docker logs smoke
+            exit 1
+          fi
+          # The home page, every app page and every blog post must answer 200.
+          paths="$(python3 -c '
+          import json
+          print("/")
+          for a in json.load(open("apps.json"))["apps"]:
+              if a.get("detail", True): print("/apps/%s/" % a["slug"])
+          for p in json.load(open("blog/posts.json"))["posts"]: print("/blog/%s/" % p["slug"])
+          ')"
+          failed=""
+          for p in $paths; do
+            curl -fsS -o /dev/null "http://127.0.0.1:3000$p" || failed="$failed $p"
+          done
+          if [ -n "$failed" ]; then
+            echo "::error::Smoke test failed: these pages did not answer 200:$failed"
+            exit 1
+          fi
+          echo "healthz ok after ${i}s; $(echo "$paths" | wc -l | tr -d ' ') pages answered 200"
+
+      - name: remove smoke container
+        if: always()
+        run: docker rm -f smoke >/dev/null 2>&1 || true
+
+      # Pushes the image that was just tested, not a second build.
+      - name: push
+        id: push
+        if: steps.existing.outputs.reuse != 'true'
+        env:
+          TARGET: ${{ steps.version.outputs.target }}
+          SOURCE: ${{ steps.version.outputs.source }}
+        run: |
+          docker push "$SOURCE"
+          docker push "$TARGET"
+          digest="$(docker inspect --format '{{index .RepoDigests 0}}' "$TARGET")"
+          echo "digest=${digest#*@}" >> "$GITHUB_OUTPUT"
+
+      # Writes only apps/site/release.env (the deployment repo's pr-scope.yml requires it).
+      # Same steps as Ricotdin's "Open deployment PR".
+      - name: open deployment PR
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.DEPLOY_REPO_TOKEN }}
+          TAG: ${{ steps.version.outputs.tag }}
+          DIGEST: ${{ steps.push.outputs.digest || steps.existing.outputs.digest }}
+        run: |
+          BRANCH="release/$APP-$TAG"
+          FILE="apps/$APP/release.env"
+          if ! [[ "$DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "::error::No image digest ('$DIGEST'). Nothing was opened."
+            exit 1
+          fi
+
+          gh auth setup-git
+          gh repo clone "$DEPLOY_REPO" deployment -- --depth 1
+          cd deployment
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+
+          mkdir -p "apps/$APP"
+          {
+            echo "# Written by the $APP release workflow for $TAG (commit $GITHUB_SHA). Do not edit by hand."
+            echo "$VAR=$IMAGE:$TAG@$DIGEST"
+            echo "$VERSION_VAR=$TAG"
+          } > "$FILE"
+
+          git add "$FILE"
+          # Re-run after the pull request was merged: release.env is already right, nothing to commit.
+          if git diff --cached --quiet; then
+            echo "$FILE already pins $TAG on the default branch — nothing to do."
+            echo "url=already merged" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git commit -m "$APP $TAG"
+          # --force: re-running for the same version rewrites the old branch.
+          git push --force -u origin "$BRANCH"
+
+          # Only an open pull request counts (gh pr view also returns closed or merged ones).
+          url="$(gh pr list --head "$BRANCH" --state open --json url -q '.[0].url')"
+          if [ -n "$url" ]; then
+            echo "Pull request $url is open — its branch was updated."
+          else
+            url="$(gh pr create --title "$APP $TAG" --head "$BRANCH" \
+              --body "Deploy \`$IMAGE:$TAG@$DIGEST\` (commit $GITHUB_SHA). Written by $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID. Merging runs deploy-site on the home server.")"
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: summary
+        if: always()
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+          TARGET: ${{ steps.version.outputs.target }}
+          DIGEST: ${{ steps.push.outputs.digest || steps.existing.outputs.digest }}
+          PR_URL: ${{ steps.pr.outputs.url }}
+        run: |
+          {
+            echo "### Release ${TAG:-not started}"
+            echo ""
+            echo "- Image: \`${TARGET}@${DIGEST:-not pushed}\`"
+            echo "- Deployment pull request: ${PR_URL:-not opened}"
+            echo ""
+            echo "Merge the pull request on $DEPLOY_REPO to deploy."
+          } >> "$GITHUB_STEP_SUMMARY"
