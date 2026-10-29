@@ -11,7 +11,7 @@ Set "detail": false for an app that has no brief yet (listed, no detail page).
 Set "page" to a standalone landing page (e.g. pages/x.html) to publish it as the app's page
 instead of the generated one; the build adds a small mmlabs bar with "All apps" and "Open app".
 """
-import hashlib, json, re, shutil, subprocess, sys, threading, time
+import hashlib, json, os, re, shutil, subprocess, sys, threading, time
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from html import escape as e
@@ -21,6 +21,8 @@ ROOT = Path(__file__).parent
 DIST = ROOT / "dist"
 WATCHED = [ROOT / "apps.json", ROOT / "home.html", ROOT / "assets", ROOT / "pages", ROOT / "blog", ROOT / "build.py"]
 data = site = apps = posts = None
+# Release version shown in the footer ({{version}}). The release workflow passes it in (e.g. v0.3.0); local builds show "dev".
+VERSION = os.environ.get("SITE_VERSION") or "dev"
 STATUS = {"live": "Live", "in-development": "In development", "planned": "Planned"}
 
 def has_detail(a): return a.get("detail", True)
@@ -117,13 +119,14 @@ def publish(path, html):
 
 def fill(html, up=""):
     # {{url:slug}} and {{page:slug}} are filled from apps.json, {{social}} and {{email}} from site.social,
-    # {{home}} with the path back to the home page. up is the path from the page to the site root.
+    # {{home}} with the path back to the home page, {{version}} with the release version.
+    # up is the path from the page to the site root.
     by_slug = {a["slug"]: a for a in apps}
     def app_link(m):
         a = by_slug[m.group(2)]
         return e(a["url"]) if m.group(1) == "url" or not has_detail(a) else f'{up}apps/{e(a["slug"])}/'
     html = html.replace("{{social}}", social_links()).replace("{{email}}", e(site["social"]["email"]))
-    html = html.replace("{{home}}", up or "./")
+    html = html.replace("{{home}}", up or "./").replace("{{version}}", e(VERSION))
     return re.sub(r"\{\{(url|page):([\w-]+)\}\}", app_link, html)
 
 def post_card(p, up=""):

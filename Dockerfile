@@ -4,7 +4,9 @@
 FROM python:3.12-slim AS build
 WORKDIR /src
 COPY . .
-RUN python build.py
+# Shown in the footer; the release workflow passes the version from the release/vX.Y.Z branch.
+ARG SITE_VERSION=dev
+RUN SITE_VERSION="$SITE_VERSION" python build.py
 
 # Stage 2: serve dist/ with nginx on :3000
 FROM nginx:alpine
