@@ -109,6 +109,8 @@ jobs:
           load: true
           push: false
           provenance: false
+          build-args: |
+            SITE_VERSION=${{ steps.version.outputs.tag }}
           tags: |
             ${{ steps.version.outputs.target }}
             ${{ steps.version.outputs.source }}
