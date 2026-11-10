@@ -145,10 +145,10 @@
     },
     {
       "slug": "sso",
-      "name": "SSO with Keycloak",
+      "name": "DaSSO",
       "category": "Single sign-on",
       "tagline": "One sign-in for every internal app.",
-      "summary": "An R&D project to give the team single sign-on with a self-hosted Keycloak: one account and one MFA setup across CaleChip, Ricotdin, SeatMGT and CertTracker, with access removed in one place.",
+      "summary": "DaSSO is single sign-on for every mmlabs app, built on a self-hosted Keycloak: one account and one MFA setup across CaleChip, Ricotdin, SeatMGT and CertTracker, with access removed in one place.",
       "status": "planned",
       "statusNote": "R&D: research and design",
       "url": "",

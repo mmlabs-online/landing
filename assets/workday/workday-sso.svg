@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 652 440" width="652" height="440">
-  <title>SSO with Keycloak – sign in once</title>
+  <title>DaSSO – sign in once</title>
   <g stroke="#1A2442" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
     <rect width="652" height="440" rx="52" fill="#FFE3D1" stroke="none"/>
     <circle cx="96" cy="370" r="110" fill="#FFF1E8" stroke="none"/>
