@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SSO R&amp;D with Keycloak</title>
-<meta name="description" content="An R&amp;D project to give the team single sign-on with a self-hosted Keycloak: one account, one MFA setup, every mmlabs app.">
+<title>DaSSO · One sign-in for every internal app</title>
+<meta name="description" content="DaSSO is single sign-on for every mmlabs app, built on a self-hosted Keycloak: one account, one MFA setup, every mmlabs app.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -70,6 +70,8 @@
   .brand { font-weight: 800; color: var(--ink); text-decoration: none; letter-spacing: -0.01em; display: flex; align-items: center; gap: 10px; }
   .brand-mark { width: 26px; height: 26px; border-radius: 7px; background: var(--brand); display: grid; place-items: center; }
   .brand-mark svg { width: 15px; height: 15px; color: #fff; }
+  .brand-logo { width: 26px; height: 26px; display: block; }
+  .hub-logo { width: clamp(40px, 9vw, 56px); height: auto; display: block; margin: 0 auto 4px; }
   .nav ul { list-style: none; margin: 0; padding: 0; display: flex; gap: 22px; }
   .nav ul a { color: var(--muted); text-decoration: none; font-size: 0.95rem; font-weight: 500; padding: 4px 0; border-bottom: 2px solid transparent; transition: color .2s, border-color .2s; }
   .nav ul a:hover, .nav ul a[aria-current="true"] { color: var(--ink); border-bottom-color: var(--brand); }
@@ -325,7 +327,7 @@
 
 <nav class="nav" aria-label="Page sections">
   <div class="wrap">
-    <a class="brand" href="#top"><span class="brand-mark"><svg><use href="#i-key"/></svg></span>SSO R&amp;D</a>
+    <a class="brand" href="#top"><img class="brand-logo" src="../../assets/dasso-mark.png" alt="" width="26" height="26">DaSSO</a>
     <ul>
       <li><a href="#summary">Summary</a></li>
       <li><a href="#problem">Problem</a></li>
@@ -342,7 +344,7 @@
   <div class="wrap">
     <div>
       <h1>One sign&#8209;in for every internal app</h1>
-      <p>An R&amp;D project to give the DAS team single sign-on with Keycloak: one account, one MFA setup, four apps.</p>
+      <p>DaSSO is an R&amp;D project to give the DAS team single sign-on, built on Keycloak: one account, one MFA setup, four apps.</p>
       <span class="status"><span class="dot" aria-hidden="true"></span>In progress: research and design</span>
       <div class="hero-actions">
         <a class="btn btn-light" href="#demo">Try the demo</a>
@@ -351,7 +353,7 @@
     </div>
 
     <div>
-      <div class="orbit" role="img" aria-label="Keycloak in the center, connected to four apps: CaleChip, Ricotdin, SeatMGT and CertTracker. After one sign-in, every app shows Signed in.">
+      <div class="orbit" role="img" aria-label="DaSSO in the center, connected to four apps: CaleChip, Ricotdin, SeatMGT and CertTracker. After one sign-in, every app shows Signed in.">
         <svg class="links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
           <line class="link" data-i="1" style="--lc: #5EEAD4" x1="50" y1="50" x2="21" y2="17"/>
           <line class="link" data-i="2" style="--lc: #FCD34D" x1="50" y1="50" x2="79" y2="17"/>
@@ -359,7 +361,7 @@
           <line class="link" data-i="4" style="--lc: #86EFAC" x1="50" y1="50" x2="79" y2="83"/>
         </svg>
         <div class="hub" id="hub" aria-hidden="true">
-          <div><svg><use href="#i-key"/></svg><b>Keycloak</b><small>1 sign-in</small></div>
+          <div><img class="hub-logo" src="../../assets/dasso-mark.png" alt="" width="56" height="56"><b>DaSSO</b><small>1 sign-in</small></div>
         </div>
         <a class="app app-1" data-i="1" href="#demo" aria-hidden="true" tabindex="-1">
           <span class="app-head"><span class="app-icon"><svg><use href="#i-cal"/></svg></span><span><span class="app-name">CaleChip</span></span></span>
@@ -398,7 +400,7 @@
       <p>What we're testing and for whom.</p>
     </header>
     <div class="reveal">
-      <p class="lead">We're testing whether a self-hosted Keycloak server can give the DAS team single sign-on across four internal apps: CaleChip, Ricotdin, SeatMGT and CertTracker. People sign in once with their email, company account, Google or GitHub, confirm with multi-factor authentication (MFA), and every connected app trusts that sign-in.</p>
+      <p class="lead">We're testing whether DaSSO, a self-hosted Keycloak server, can give the DAS team single sign-on across four internal apps: CaleChip, Ricotdin, SeatMGT and CertTracker. People sign in once with their email, company account, Google or GitHub, confirm with multi-factor authentication (MFA), and every connected app trusts that sign-in.</p>
       <dl class="facts">
         <div><dt>Scope</dt><dd>DAS team, under 50 people</dd></div>
         <div><dt>Apps</dt><dd>CaleChip, Ricotdin, SeatMGT, CertTracker</dd></div>
@@ -466,7 +468,7 @@
     </header>
     <ul class="features reveal">
       <li class="feature"><span class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/></svg></span><h3>Sign in once</h3><p>After your first sign-in of the day, every connected app opens without asking again. Apps never see your password.</p></li>
-      <li class="feature"><span class="f-icon"><svg aria-hidden="true"><use href="#i-mail"/></svg></span><h3>Sign in your way</h3><p>Use your email or company account, or link your Google or GitHub account through Keycloak.</p></li>
+      <li class="feature"><span class="f-icon"><svg aria-hidden="true"><use href="#i-mail"/></svg></span><h3>Sign in your way</h3><p>Use your email or company account, or link your Google or GitHub account through DaSSO.</p></li>
       <li class="feature"><span class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg></span><h3>MFA everywhere</h3><p>Set up multi-factor authentication once in Keycloak, and it protects every app behind it.</p></li>
       <li class="feature"><span class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M3 21v-1a6 6 0 0 1 9.5-4.9"/><path d="M16 16l5 5M21 16l-5 5"/></svg></span><h3>Remove access in one place</h3><p>Disable an account in Keycloak and it stops working across all four apps.</p></li>
       <li class="feature"><span class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="7" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M15 15.5a5 5 0 0 1 6 4.5"/></svg></span><h3>Permissions from groups</h3><p>Put someone in the admin or viewer group, and apps give them the matching role automatically.</p></li>
@@ -485,23 +487,23 @@
       <ol class="steps reveal" id="steps">
         <li data-step="1">
           <h3>You open an app</h3>
-          <p>Say you open CaleChip. It sees you aren't signed in and sends your browser to Keycloak.</p>
+          <p>Say you open CaleChip. It sees you aren't signed in and sends your browser to DaSSO.</p>
         </li>
         <li data-step="2">
-          <h3>You sign in at Keycloak</h3>
-          <p>Use your email or company account, or pick Google or GitHub, then confirm with MFA. Keycloak starts a session for you.</p>
+          <h3>You sign in at DaSSO</h3>
+          <p>Use your email or company account, or pick Google or GitHub, then confirm with MFA. DaSSO starts a session for you.</p>
         </li>
         <li data-step="3">
-          <h3>Keycloak vouches for you</h3>
-          <p>It sends the app a short-lived code. The app trades that code for a signed token directly with Keycloak, using OpenID Connect with PKCE.</p>
+          <h3>DaSSO vouches for you</h3>
+          <p>It sends the app a short-lived code. The app trades that code for a signed token directly with DaSSO, using OpenID Connect with PKCE.</p>
         </li>
         <li data-step="4">
           <h3>The app checks the token and lets you in</h3>
-          <p>It verifies Keycloak's signature, confirms the token was issued for it, reads your groups, and starts its own session.</p>
+          <p>It verifies DaSSO's signature, confirms the token was issued for it, reads your groups, and starts its own session.</p>
         </li>
         <li data-step="5">
           <h3>The next app opens straight away</h3>
-          <p>Open Ricotdin, SeatMGT or CertTracker next. Keycloak recognises your session, so each app gets its own token without asking again.</p>
+          <p>Open Ricotdin, SeatMGT or CertTracker next. DaSSO recognises your session, so each app gets its own token without asking again.</p>
         </li>
       </ol>
 
@@ -512,8 +514,8 @@
         </div>
         <div class="demo-body">
           <div class="login" id="login">
-            <h4>Sign in to DAS</h4>
-            <p class="sub">Keycloak sign-in page</p>
+            <h4>Sign in with DaSSO</h4>
+            <p class="sub">DaSSO sign-in page, powered by Keycloak</p>
             <div class="seg" role="group" aria-label="Sign-in method">
               <button type="button" data-m="email" aria-pressed="true"><svg><use href="#i-mail"/></svg>Email</button>
               <button type="button" data-m="company" aria-pressed="false"><svg><use href="#i-building"/></svg>Company</button>
@@ -528,7 +530,7 @@
               <span class="field">Username <b>test</b></span>
               <span class="field">Password <b>&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;</b></span>
             </div>
-            <p class="ext-note" id="ext-note" hidden>You confirm on <span id="ext-name">Google</span>, then come back to Keycloak.</p>
+            <p class="ext-note" id="ext-note" hidden>You confirm on <span id="ext-name">Google</span>, then come back to DaSSO.</p>
             <span class="field">One-time code <b>482 913</b></span>
             <button type="button" class="signin" id="signin">Sign in</button>
           </div>
@@ -540,7 +542,7 @@
               <button type="button" class="tile t3" data-app="SeatMGT"><span class="app-head"><span class="app-icon"><svg><use href="#i-seat"/></svg></span><span class="app-name">SeatMGT</span></span><span class="pill"><svg class="lock"><use href="#i-lock"/></svg><svg class="check"><use href="#i-check"/></svg><span class="txt">Signed out</span></span></button>
               <button type="button" class="tile t4" data-app="CertTracker"><span class="app-head"><span class="app-icon"><svg><use href="#i-cert"/></svg></span><span class="app-name">CertTracker</span></span><span class="pill"><svg class="lock"><use href="#i-lock"/></svg><svg class="check"><use href="#i-check"/></svg><span class="txt">Signed out</span></span></button>
             </div>
-            <p class="log-label">Keycloak activity</p>
+            <p class="log-label">DaSSO activity</p>
             <ul class="log" id="log"><li class="empty">No events yet</li></ul>
           </div>
         </div>
@@ -556,7 +558,7 @@
       <p>What we expect, and what it asks of us.</p>
     </header>
     <div class="reveal">
-      <p class="lead">Keycloak gives the DAS team one secure sign-in for all four apps, with no license cost.</p>
+      <p class="lead">DaSSO gives the DAS team one secure sign-in for all four apps. It runs on Keycloak, so there is no license cost.</p>
       <dl class="outcomes">
         <div><dt>For the team</dt><dd>One account and one two-step setup instead of four separate logins.</dd></div>
         <div><dt>For security</dt><dd>Two-step verification everywhere, and access removed in one place when someone leaves.</dd></div>
@@ -569,7 +571,7 @@
 </main>
 
 <footer>
-  <div class="wrap">Internal R&amp;D proposal for the DAS team. Figures and plans may change after review.</div>
+  <div class="wrap">DaSSO · Internal R&amp;D proposal for the DAS team. Figures and plans may change after review.</div>
 </footer>
 
 <script>
@@ -675,12 +677,12 @@
       t.classList.remove('shake'); void t.offsetWidth; t.classList.add('shake');
       login.classList.add('attention');
       setStep(1);
-      say('<b>' + app + '</b> sends you to Keycloak. Press <b>Sign in</b> to continue.');
+      say('<b>' + app + '</b> sends you to DaSSO. Press <b>Sign in</b> to continue.');
       return;
     }
     busy = true;
     setStep(5);
-    say('Opening <b>' + app + '</b>. Keycloak already knows you, so no password is needed.');
+    say('Opening <b>' + app + '</b>. DaSSO already knows you, so no password is needed.');
     log('CODE_TO_TOKEN', 'client=' + app.toLowerCase());
     await wait(500);
     openTile(t);
@@ -694,13 +696,13 @@
     if (busy || session) return;
     busy = true; signinBtn.disabled = true; login.classList.remove('attention');
     const first = tiles.find(t => t.dataset.app === firstApp);
-    setStep(1); say('<b>' + firstApp + '</b> sends you to Keycloak.');
+    setStep(1); say('<b>' + firstApp + '</b> sends you to DaSSO.');
     await wait(800);
     setStep(2); say('Signing in with <b>' + names[method] + '</b>, then MFA with a one-time code.');
     if (method === 'google' || method === 'github') log('IDENTITY_PROVIDER_LOGIN', 'provider=' + method);
     log('LOGIN', 'user=test method=' + method + ' mfa=otp');
     await wait(1000);
-    setStep(3); say('Keycloak sends a short-lived code. ' + firstApp + ' trades it for a signed token.');
+    setStep(3); say('DaSSO sends a short-lived code. ' + firstApp + ' trades it for a signed token.');
     log('CODE_TO_TOKEN', 'client=' + firstApp.toLowerCase() + ' pkce=S256');
     await wait(1000);
     setStep(4); say(firstApp + ' checks the signature and your groups.');
