@@ -7,7 +7,7 @@ on the home server. **Where this page and a workflow disagree, the workflow is r
 ```mermaid
 flowchart LR
   A["pull request<br/>verify"] --> B["merge to main"]
-  B --> C["cut release/vX.Y.Z<br/>release: build, smoke test,<br/>push :vX.Y.Z"]
+  B --> C["cut release/X.Y.Z<br/>release: build, smoke test,<br/>push :vX.Y.Z"]
   C --> D["PR 'site vX.Y.Z'<br/>on deployment"]
   D --> E["merge it<br/>deploy-site on the<br/>home server's runner"]
 ```
@@ -48,8 +48,8 @@ The image name is `IMAGE` at the top of `release.yml`. If `DOCKERHUB_USERNAME` i
 3. Cut the branch and push it:
    ```bash
    git switch main && git pull
-   git switch -c release/v0.3.0
-   git push -u origin release/v0.3.0
+   git switch -c release/0.3.0
+   git push -u origin release/0.3.0
    ```
    `release/0.3.0` works too. Any other name under `release/` fails at `version` and builds nothing.
 4. `release` runs. Its summary gives the image digest and the link to the pull request
@@ -59,8 +59,8 @@ The image name is `IMAGE` at the top of `release.yml`. If `DOCKERHUB_USERNAME` i
 6. **Confirm it.** `deploy-site` comments `deployed: …` on the merged pull request. Any other comment
    is a case in [When a deploy fails](#when-a-deploy-fails).
 
-**A version is released once.** Pushing a new commit to `release/v0.3.0` after it was released fails
-at `already released?`: `:v0.3.0` is never moved. Put the fix on `main` and cut `release/v0.3.1`.
+**A version is released once.** Pushing a new commit to `release/0.3.0` after it was released fails
+at `already released?`: `:v0.3.0` is never moved. Put the fix on `main` and cut `release/0.3.1`.
 Re-running a failed `release` run for the same commit is fine: it reuses the image it already pushed
 and updates the open pull request.
 
