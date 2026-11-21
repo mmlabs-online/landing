@@ -22,10 +22,10 @@ Watch mode rebuilds when `apps.json`, `home.html`, `assets/`, `pages/`, `blog/` 
 3. Run `python3 build.py`. The post is published at `blog/<slug>/`, uses the home page's header, newsletter and footer, and shows up in "Fresh from the lab" (`{{posts}}` in `home.html`).
 
 ## Release and deploy
-Same flow as Ricotdin and CaleChip. Cut a branch `release/vX.Y.Z` from `main` and push it:
+Same flow as Ricotdin and CaleChip. Cut a branch `release/X.Y.Z` from `main` and push it:
 
-    git switch -c release/v0.3.0 main
-    git push -u origin release/v0.3.0
+    git switch -c release/0.3.0 main
+    git push -u origin release/0.3.0
 
 The `release` workflow builds and smoke-tests the image, pushes `mingming21400/mmlabs-site:v0.3.0`, and opens the pull request `site v0.3.0` on [mmlabs-online/deployment](https://github.com/mmlabs-online/deployment). Merging that pull request deploys it on the home server. Secrets, versions and what to do when a deploy fails: [docs/ops/ci-cd.md](docs/ops/ci-cd.md).
 

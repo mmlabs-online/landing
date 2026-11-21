@@ -1,6 +1,6 @@
 name: release
 
-# Cut a branch release/vX.Y.Z (or release/X.Y.Z) and push it: this builds the site image, smoke-tests
+# Cut a branch release/X.Y.Z (no v; e.g. release/1.2.0) and push it: this builds the site image, smoke-tests
 # it, pushes mingming21400/mmlabs-site:vX.Y.Z, and opens the pull request "site vX.Y.Z" on
 # mmlabs-online/deployment that pins apps/site/release.env to that image by digest.
 # Deploy = review + merge that pull request: deploy-site.yml then runs on the home server's runner.
@@ -16,7 +16,7 @@ name: release
 
 on:
   push:
-    branches: ["release/**"]
+    branches: ["release/[0-9]*"] # release/X.Y.Z (no v); the tag is vX.Y.Z
 
 permissions:
   contents: read
@@ -60,12 +60,12 @@ jobs:
             exit 1
           fi
 
-      # release/v1.2.0 or release/1.2.0 -> v1.2.0. deploy-site.yml accepts vX.Y[.Z][-prerelease].
+      # release/1.2.0 -> v1.2.0 (all mmlabs apps use release/X.Y.Z, Ming 2026-11-21). deploy-site.yml accepts vX.Y[.Z][-prerelease].
       - name: version
         id: version
         run: |
-          if ! [[ "$GITHUB_REF_NAME" =~ ^release/v?([0-9]+\.[0-9]+(\.[0-9]+)?(-[0-9A-Za-z.-]+)?)$ ]]; then
-            echo "::error::Branch $GITHUB_REF_NAME is not release/vX.Y.Z (e.g. release/v1.2.0). Nothing was built."
+          if ! [[ "$GITHUB_REF_NAME" =~ ^release/([0-9]+\.[0-9]+(\.[0-9]+)?(-[0-9A-Za-z.-]+)?)$ ]]; then
+            echo "::error::Branch $GITHUB_REF_NAME is not release/X.Y.Z (e.g. release/1.2.0). Nothing was built."
             exit 1
           fi
           tag="v${BASH_REMATCH[1]}"
